@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PandaBook - Главный экран</title>
     <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="ui.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
@@ -43,8 +44,16 @@
                 <button class="mode-btn active" id="btn-thinking" onclick="setMode('thinking')">Думающий (pro)</button>
             </div>
         </header>
-        <section class="kbzhu-container">
-            <div class="kbzhu-card">
+
+        <section class="panda-widget" id="pandaWidget" style="display:none;">
+            <span class="panda-emoji" id="pandaEmoji">🐼</span>
+            <div>
+                <strong class="panda-label" id="pandaLabel">Загрузка…</strong>
+                <span class="panda-streak" id="pandaStreak"></span>
+            </div>
+        </section>
+
+        <section class="kbzhu-container">            <div class="kbzhu-card">
                 <span class="kbzhu-title">Каллории</span>
                 <span class="kbzhu-value">1500 / 2000ккал</span>
                 <div class="progress-bg"><div class="progress-bar" style="width: 75%;"></div></div>
@@ -146,8 +155,8 @@
     </div>
 
     <script src="api.js"></script>
-    <script>
-        let currentMode = 'fast';
+    <script src="ui.js"></script>
+    <script>        let currentMode = 'fast';
         let currentRequest = '';
         const MEAL_NAMES = { breakfast: "Завтрак", lunch: "Обед", dinner: "Ужин", snack: "Перекус" };
 
@@ -224,6 +233,19 @@
             } else { box.style.display = 'none'; }
         }
 
+        async function loadProgress() {
+            try {
+                const p = await api("GET", "/api/progress/dashboard");
+                document.getElementById("pandaWidget").style.display = "flex";
+                document.getElementById("pandaEmoji").textContent = p.panda_emoji;
+                document.getElementById("pandaLabel").textContent = p.panda_label;
+                document.getElementById("pandaStreak").textContent =
+                    p.streak > 0 ? `Серия: ${p.streak} ${p.streak === 1 ? "день" : "дней"} в норме 🔥` : "Начни серию — попади в норму сегодня!";
+            } catch (e) {
+                console.warn("progress", e);
+            }
+        }
+
         async function loadPlan() {
             const notes = document.querySelector('.notes-block');
             if (currentMode === 'thinking' && notes) { notes.style.display = 'block'; notes.innerHTML = '🧠 Модель думает…'; }
@@ -237,11 +259,15 @@
                 if (currentMode === 'thinking') renderThinking(r);
             } catch (e) {
                 if (notes) { notes.style.display = 'block'; notes.innerHTML = 'Не удалось загрузить рацион: ' + apiError(e); }
+                toast('Не удалось загрузить рацион: ' + apiError(e), 'error');
             }
         }
 
         if (requireAuth()) {
-            const reqBtn = document.querySelector('.request-btn');
+            document.querySelector('.kbzhu-container').innerHTML =
+                Array(4).fill('<div class="kbzhu-card"><div class="skeleton-bar" style="width:60%;margin-bottom:8px;"></div><div class="skeleton-bar"></div></div>').join('');
+            document.querySelector('.meals-container').innerHTML = '<div class="notes-block">Загрузка рациона…</div>';
+            loadProgress();            const reqBtn = document.querySelector('.request-btn');
             if (reqBtn) reqBtn.addEventListener('click', () => {
                 currentRequest = document.querySelector('.request-input').value.trim();
                 loadPlan();

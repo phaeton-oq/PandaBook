@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Регистрация</title>
     <link rel="stylesheet" href="reg.css">
+    <link rel="stylesheet" href="ui.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
@@ -30,7 +31,7 @@
             
             <div class="input-group">
                 <label for="password">Пароль</label>
-                <input type="password" id="password" placeholder="123456">
+                <input type="password" id="password" placeholder="минимум 8 символов" minlength="8" required autocomplete="new-password">
             </div>
             <div class="form-footer">
                 <span class="account">Уже есть аккаунт?</span>
@@ -43,22 +44,31 @@
     </div>
 
     <script src="api.js"></script>
+    <script src="ui.js"></script>
     <script>
         document.querySelector(".reg-form").addEventListener("submit", async (e) => {
             e.preventDefault();
+            const btn = e.target.querySelector(".submit-btn");
             const name = document.getElementById("username").value.trim();
             const email = document.getElementById("email").value.trim();
             const password = document.getElementById("password").value;
-            if (password.length < 8) return alert("Пароль минимум 8 символов");
+            if (!isValidEmail(email)) return toast("Некорректный email", "error");
+            if (password.length < 8) return toast("Пароль минимум 8 символов", "error");
+            btn.disabled = true;
+            btn.textContent = "Регистрация…";
             const profile = { sex: "male", age: 25, weight_kg: 70, height_cm: 175,
                 activity: "moderate", goal: "maintain", prefs: { allergens: [] } };
             try {
                 const r = await api("POST", "/api/auth/register", { email, password, name, profile });
                 Auth.token = r.access_token;
-                location.href = "profile.html";  // заполнить профиль
+                toast("Аккаунт создан!", "success");
+                setTimeout(() => { location.href = "profile.html"; }, 400);
             } catch (err) {
-                if (err.status === 409) return alert("Такой email уже зарегистрирован");
-                alert("Ошибка регистрации: " + apiError(err));
+                if (err.status === 409) return toast("Такой email уже зарегистрирован", "error");
+                toast("Ошибка регистрации: " + apiError(err), "error");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Регистрация";
             }
         });
     </script>

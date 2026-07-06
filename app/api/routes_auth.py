@@ -142,7 +142,7 @@ def me(user: Annotated[models.User, Depends(get_current_user)]) -> MeResponse:
 
 class UpdateMeRequest(BaseModel):
     name: str | None = Field(default=None, max_length=100)
-    profile: UserProfile
+    profile: UserProfile | None = None
 
 
 @router.patch("/me", response_model=MeResponse)
@@ -153,7 +153,8 @@ def update_me(
 ) -> MeResponse:
     if req.name is not None:
         user.name = req.name
-    _apply_profile(user, req.profile)
+    if req.profile is not None:
+        _apply_profile(user, req.profile)
     db.commit()
     db.refresh(user)
     return MeResponse(id=user.id, email=user.email, name=user.name, profile=_user_to_profile(user))

@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="fridge.css">
+    <link rel="stylesheet" href="ui.css">
 </head>
 <body>
 
@@ -21,7 +22,7 @@
         <ul class="menu-links">
             <li><a href="profile.html" class="menu-item">Профиль</a></li>
             <li><a href="dashboard.html" class="menu-item">Главный экран</a></li>
-            <li><a href="fridge.html" class="menu-item active">
+            <li><a href="fridge.html" class="menu-item active">Мой холодильник</a></li>
             <li><a href="shopping.html" class="menu-item">Мои покупки</a></li>
             <li><a href="landing.html#pricing" class="menu-item">Купить подписку</a></li>
         </ul>
@@ -44,12 +45,11 @@
                 <h3 class="section-title"> Поиск в глобальной базе</h3>
                 <div style="position: relative; width: 100%;">
                     <input type="text" id="offSearchInput" class="form-control" placeholder="Введите название продукта" oninput="handleSearchInput(this.value)">
-                    <div class="search-results-dropdown" id="searchResults">
-                        <div class="search-result-item" onclick="selectSearchProduct('Творог 5% Простоквашино', '300')"> Творог 5% Простоквашино</div>
-                        <div class="search-result-item" onclick="selectSearchProduct('Греческий йогурт TEOS', '140')"> Греческий йогурт TEOS</div>
-                        <div class="search-result-item" onclick="selectSearchProduct('Сыр Легкий 15%', '200')"> Сыр Легкий 15%</div>
-                        <div class="search-result-item" onclick="selectSearchProduct('Филе индейки охлажденное', '500')"> Филе индейки охлажденное</div>
-                    </div>
+                    <div class="search-results-dropdown" id="searchResults"></div>
+                </div>
+                <div class="barcode-row">
+                    <input type="text" id="barcodeInput" class="form-control" placeholder="Штрихкод (EAN)" inputmode="numeric" maxlength="20">
+                    <button type="button" class="btn" onclick="lookupBarcode()">Найти</button>
                 </div>
             </div>
 
@@ -89,6 +89,7 @@
     </div>
 
     <script src="api.js"></script>
+    <script src="ui.js"></script>
     <script>
         let selectedProduct = null;   // {product_id?|name|off_barcode} chosen from search
         let searchHits = [];
@@ -146,7 +147,7 @@
                         api("GET", "/api/products?q=" + encodeURIComponent(value)),
                         api("GET", "/api/products/search?q=" + encodeURIComponent(value) + "&limit=8"),
                     ]);
-                    searchHits = [...cat, ...off].slice(0, 12);
+                    searchHits = dedupeProducts([...cat, ...off]).slice(0, 12);
                     dropdown.innerHTML = searchHits.length
                         ? searchHits.map((p, i) =>
                             `<div class="search-result-item" onclick="pickHit(${i})">${p.name} · ${Math.round(p.kcal_100)} ккал</div>`).join('')
@@ -159,24 +160,32 @@
         function pickHit(i) {
             const p = searchHits[i];
             selectedProduct = { product_id: p.id ?? undefined, name: p.name, off_barcode: p.off_barcode ?? undefined };
-            document.getElementById('prodName').value = p.name;
-            const today = new Date(); today.setDate(today.getDate() + 5);
-            document.getElementById('prodExpiry').value = today.toISOString().split('T')[0];
+            fillProductForm(p);
             document.getElementById('searchResults').classList.remove('active');
             document.getElementById('offSearchInput').value = '';
+            document.getElementById('prodWeight').focus();
         }
-        // fallback for any static suggestion markup
-        function selectSearchProduct(name) {
-            selectedProduct = { name };
-            document.getElementById('prodName').value = name;
-            document.getElementById('searchResults').classList.remove('active');
+
+        async function lookupBarcode() {
+            const code = document.getElementById("barcodeInput").value.trim();
+            if (!/^\d{8,14}$/.test(code)) return toast("Введите штрихкод 8–14 цифр", "error");
+            try {
+                const p = await api("GET", "/api/products/barcode/" + encodeURIComponent(code));
+                selectedProduct = { name: p.name, off_barcode: p.off_barcode || code };
+                fillProductForm(p);
+                document.getElementById("barcodeInput").value = "";
+                document.getElementById("prodWeight").focus();
+                toast("Найден: " + p.name, "success");
+            } catch (e) {
+                toast("Продукт не найден в Open Food Facts", "error");
+            }
         }
 
         async function saveProduct() {
             const name = document.getElementById('prodName').value.trim();
             const weight = parseInt(document.getElementById('prodWeight').value);
             const expiry = document.getElementById('prodExpiry').value || null;
-            if (!name || !weight) { alert('Укажите продукт и количество'); return; }
+            if (!name || !weight) { toast('Укажите продукт и количество', 'error'); return; }
             try {
                 if (editId > 0) {
                     await api("PATCH", "/api/fridge/" + editId, { quantity_g: weight, expiry_date: expiry });
@@ -191,7 +200,8 @@
                 }
                 resetForm();
                 loadFridge();
-            } catch (e) { alert("Не удалось сохранить: " + apiError(e)); }
+                toast(editId > 0 ? "Продукт обновлён" : "Добавлено в холодильник", "success");
+            } catch (e) { toast("Не удалось сохранить: " + apiError(e), "error"); }
         }
 
         function editItem(id, weight, expiry, name) {
@@ -206,8 +216,8 @@
 
         async function deleteItem(id) {
             if (!confirm('Удалить этот продукт?')) return;
-            try { await api("DELETE", "/api/fridge/" + id); loadFridge(); }
-            catch (e) { alert("Ошибка: " + apiError(e)); }
+            try { await api("DELETE", "/api/fridge/" + id); loadFridge(); toast("Удалено", "success"); }
+            catch (e) { toast("Ошибка: " + apiError(e), "error"); }
         }
 
         function resetForm() {
@@ -220,6 +230,9 @@
         }
 
         if (requireAuth()) loadFridge();
+        document.getElementById("barcodeInput")?.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") { e.preventDefault(); lookupBarcode(); }
+        });
     </script>
 </body>
 </html>

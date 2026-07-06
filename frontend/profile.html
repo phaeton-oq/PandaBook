@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PandaBook - Профиль</title>
     <link rel="stylesheet" href="profile.css">
+    <link rel="stylesheet" href="ui.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
@@ -19,10 +20,11 @@
             <button class="close-menu-btn" onclick="toggleMenu()">✕</button>
         </div>
         <ul class="menu-links">
-            <li><a href="#" class="menu-item active">Профиль</a></li>
+            <li><a href="profile.html" class="menu-item active">Профиль</a></li>
             <li><a href="dashboard.html" class="menu-item">Главный экран</a></li>
-            <li><a href="#" class="menu-item">Мой холодильник</a></li>
-            <li><a href="#" class="menu-item">Список покупок</a></li>
+            <li><a href="fridge.html" class="menu-item">Мой холодильник</a></li>
+            <li><a href="shopping.html" class="menu-item">Мои покупки</a></li>
+            <li><a href="landing.html#pricing" class="menu-item">Купить подписку</a></li>
         </ul>
     </nav>
 
@@ -155,6 +157,7 @@
     </div>
 
     <script src="api.js"></script>
+    <script src="ui.js"></script>
     <script>
         function toggleMenu() {
             document.getElementById('sidebarMenu').classList.toggle('open');
@@ -219,10 +222,10 @@
                 e.preventDefault();
                 try {
                     await api("PATCH", "/api/auth/me", { profile: readForm() });
-                    alert("Профиль сохранён ✅");
-                    location.href = "dashboard.html";
+                    toast("Профиль сохранён ✅", "success");
+                    setTimeout(() => { location.href = "dashboard.html"; }, 600);
                 } catch (err) {
-                    alert("Не удалось сохранить: " + apiError(err));
+                    toast("Не удалось сохранить: " + apiError(err), "error");
                 }
             });
         }

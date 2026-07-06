@@ -5,14 +5,14 @@ GET /api/products/search   : live Open Food Facts search, for autocomplete.
 """
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db import models
 from app.db.converters import product_to_schema
 from app.db.session import get_db
-from app.integrations.off import search_products
+from app.integrations.off import lookup_barcode, search_products
 from app.schemas import Product
 
 router = APIRouter(prefix="/api/products", tags=["products"])
@@ -33,3 +33,12 @@ def list_products(q: str | None = None, db: Session = Depends(get_db)) -> list[P
 def search(q: str, limit: int = 10) -> list[Product]:
     """Live Open Food Facts search — returns candidates with КБЖУ to pick from."""
     return search_products(q, limit=limit)
+
+
+@router.get("/barcode/{code}", response_model=Product)
+def by_barcode(code: str) -> Product:
+    """Open Food Facts lookup by EAN/barcode."""
+    product = lookup_barcode(code.strip())
+    if product is None:
+        raise HTTPException(404, "Product not found")
+    return product
