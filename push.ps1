@@ -5,9 +5,13 @@
 
 .PARAMETER Message
   Commit message. Default: timestamp-based message.
+
+.PARAMETER Token
+  GitHub PAT. If omitted, reads $env:GITHUB_TOKEN or .github-token file.
 #>
 param(
     [string]$Message,
+    [string]$Token,
     [switch]$Force
 )
 
@@ -15,7 +19,7 @@ $GitUserName  = "LucPrusPPi"
 $GitUserEmail = "lakeg4merx@gmail.com"
 $RepoOwner    = "phaeton-oq"
 $RepoName     = "PandaBook"
-$RemoteUrl    = "git@github.com:$RepoOwner/$RepoName.git"
+$RemoteUrl    = "https://github.com/$RepoOwner/$RepoName.git"
 
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
@@ -28,6 +32,15 @@ function Invoke-Git {
     $code = $LASTEXITCODE
     $ErrorActionPreference = $prev
     return @{ Output = $output; ExitCode = $code }
+}
+
+function Get-GitHubToken {
+    param([string]$Token)
+    if ($Token) { return $Token.Trim() }
+    if ($env:GITHUB_TOKEN) { return $env:GITHUB_TOKEN.Trim() }
+    $tokenFile = Join-Path $PSScriptRoot ".github-token"
+    if (Test-Path $tokenFile) { return (Get-Content $tokenFile -Raw).Trim() }
+    throw "GitHub token not found. Pass -Token, set `$env:GITHUB_TOKEN, or create .github-token"
 }
 
 function Invoke-GitCommit {
@@ -58,6 +71,8 @@ function Invoke-GitCommit {
         }
     }
 }
+
+$token = Get-GitHubToken -Token $Token
 
 if (-not (Test-Path (Join-Path $PSScriptRoot ".git"))) {
     throw "Not a git repository. Run .\setup-github.ps1 first."
@@ -109,14 +124,16 @@ else {
     Write-Host "No file changes." -ForegroundColor Yellow
 }
 
-$pushArgs = @("push", "origin", "HEAD:refs/heads/$branch")
-if ($Force) { $pushArgs = @("push", "--force", "origin", "HEAD:refs/heads/$branch") }
+$pushUrl = "https://$token@github.com/$RepoOwner/$RepoName.git"
+$pushArgs = @("push")
+if ($Force) { $pushArgs += "--force" }
+$pushArgs += @($pushUrl, "HEAD:refs/heads/$branch")
 
-Write-Host "Pushing to $RemoteUrl ($branch)..." -ForegroundColor Cyan
+Write-Host "Pushing to $RepoOwner/$RepoName ($branch)..." -ForegroundColor Cyan
 $pushResult = Invoke-Git @pushArgs
 if ($pushResult.ExitCode -ne 0) {
     throw "Push failed: $($pushResult.Output)"
 }
 
 Invoke-Git branch --set-upstream-to=origin/$branch $branch | Out-Null
-Write-Host "Pushed to $RemoteUrl" -ForegroundColor Green
+Write-Host "Pushed to https://github.com/$RepoOwner/$RepoName" -ForegroundColor Green
