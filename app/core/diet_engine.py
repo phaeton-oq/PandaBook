@@ -1,8 +1,12 @@
 """Daily ration generator.
 
-Greedy allocator that builds breakfast/lunch/dinner/snack from what's in the
-fridge, prioritizing products that expire soonest (anti food-waste) and
-respecting the user's dietary preferences.
+Builds breakfast/lunch/dinner/snack from what's in the fridge:
+- prioritizes products that expire soonest (anti food-waste),
+- respects dietary preferences,
+- spreads variety: each product is dealt to a single meal (round-robin over
+  expiry-sorted items), so meals differ and one product isn't smeared across
+  the whole day,
+- skips drinks/sweets so they don't become a meal's base.
 """
 from __future__ import annotations
 
@@ -16,9 +20,11 @@ from app.schemas import (
     Meal,
     MealItem,
     MealType,
+    Product,
     Targets,
 )
 
+_MEAL_ORDER = [MealType.breakfast, MealType.lunch, MealType.dinner, MealType.snack]
 _MEAL_SPLIT: dict[MealType, float] = {
     MealType.breakfast: 0.25,
     MealType.lunch: 0.35,
@@ -30,16 +36,24 @@ MIN_PORTION_G = 20
 MAX_PORTION_G = 300
 _EXPIRING_SOON_DAYS = 3
 
+# Heuristic: things that shouldn't be a meal's base. Matched as substrings of
+# "name + category" (lowercase). Rough but cheap — tune the lists as needed.
+_DRINK_WORDS = ("напит", "газиров", "тархун", "лимонад", "cola", "pepsi", "soda",
+                "juice", "water", "квас", "морс", "сок", "чай", "кофе", "компот",
+                "beverage", "drink", "вода")
+_SWEET_WORDS = ("конфет", "шоколад", "chocolate", "батончик", "мармелад", "candy",
+                "вафл", "wafer", "печенье", "пастил", "зефир")
 
-def _macros(item: FridgeItem, grams: float) -> tuple[float, float, float, float]:
+
+def _is_edible(product: Product) -> bool:
+    text = (product.name + " " + product.category).lower()
+    return not any(w in text for w in _DRINK_WORDS + _SWEET_WORDS)
+
+
+def _macros(product: Product, grams: float) -> tuple[float, float, float, float]:
     f = grams / 100
-    p = item.product
-    return p.kcal_100 * f, p.protein_100 * f, p.fat_100 * f, p.carbs_100 * f
-
-
-def _sort_key(item: FridgeItem, day: date):
-    # soonest expiry first; items without a date go last
-    return item.expiry_date or date.max
+    return (product.kcal_100 * f, product.protein_100 * f,
+            product.fat_100 * f, product.carbs_100 * f)
 
 
 def generate_day_plan(
@@ -52,28 +66,32 @@ def generate_day_plan(
     soon = day + timedelta(days=_EXPIRING_SOON_DAYS)
 
     pool = sorted(
-        (f for f in fridge if is_allowed(f.product, prefs) and f.product.kcal_100 > 0),
-        key=lambda f: _sort_key(f, day),
+        (f for f in fridge
+         if is_allowed(f.product, prefs) and f.product.kcal_100 > 0 and _is_edible(f.product)),
+        key=lambda f: f.expiry_date or date.max,
     )
-    remaining = [f.quantity_g for f in pool]
+
+    # deal each product to exactly one meal → variety, no cross-meal smearing
+    assigned: dict[MealType, list[FridgeItem]] = {mt: [] for mt in _MEAL_ORDER}
+    for idx, item in enumerate(pool):
+        assigned[_MEAL_ORDER[idx % len(_MEAL_ORDER)]].append(item)
 
     meals: list[Meal] = []
-    for meal_type, share in _MEAL_SPLIT.items():
-        budget = targets.kcal * share
+    for meal_type in _MEAL_ORDER:
+        budget = targets.kcal * _MEAL_SPLIT[meal_type]
         meal = Meal(type=meal_type)
         acc_kcal = 0.0
 
-        for i, item in enumerate(pool):
-            if remaining[i] < MIN_PORTION_G or acc_kcal >= budget * 0.95:
-                continue
+        for item in assigned[meal_type]:  # already expiry-sorted (stable)
+            if acc_kcal >= budget * 0.95:
+                break
             kcal_per_g = item.product.kcal_100 / 100
-            grams = (budget - acc_kcal) / kcal_per_g
-            grams = min(grams, remaining[i], MAX_PORTION_G)
+            grams = min((budget - acc_kcal) / kcal_per_g, item.quantity_g, MAX_PORTION_G)
             grams = round(grams / 10) * 10
             if grams < MIN_PORTION_G:
                 continue
 
-            kcal, p, f, c = _macros(item, grams)
+            kcal, p, f, c = _macros(item.product, grams)
             meal.items.append(MealItem(
                 product_name=item.product.name, grams=grams,
                 kcal=round(kcal), protein=round(p, 1), fat=round(f, 1), carbs=round(c, 1),
@@ -83,7 +101,6 @@ def generate_day_plan(
             meal.protein += p
             meal.fat += f
             meal.carbs += c
-            remaining[i] -= grams
             acc_kcal += kcal
 
         for attr in ("kcal", "protein", "fat", "carbs"):

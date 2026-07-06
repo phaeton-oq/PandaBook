@@ -67,3 +67,35 @@ def test_recommender_flags_protein_deficit():
     planned = Targets(kcal=1000, protein_g=40, fat_g=30, carbs_g=100)
     recs = recommend([CHICKEN, OATS, TOFU], targets, planned, DietaryPrefs())
     assert any("белка" in r.reason for r in recs)
+
+
+RICE = Product(name="Рис белый", kcal_100=344, protein_100=6.7, fat_100=0.7, carbs_100=78)
+EGG = Product(name="Яйцо", kcal_100=155, protein_100=13, fat_100=11, carbs_100=1.1, tags=["egg"])
+COTTAGE = Product(name="Творог", kcal_100=121, protein_100=17, fat_100=5, carbs_100=3, tags=["dairy"])
+SODA = Product(name="Тархун", category="beverages", kcal_100=38, protein_100=0, fat_100=0, carbs_100=9)
+
+
+def _big_fridge():
+    return [FridgeItem(product=p, quantity_g=500)
+            for p in (CHICKEN, RICE, OATS, EGG, COTTAGE, TOFU)]
+
+
+def test_no_product_split_across_meals():
+    plan = generate_day_plan(_big_fridge(), compute_targets(_profile(Goal.gain)), DietaryPrefs())
+    meals_per_product: dict[str, int] = {}
+    for m in plan.meals:
+        for name in {it.product_name for it in m.items}:
+            meals_per_product[name] = meals_per_product.get(name, 0) + 1
+    assert all(count == 1 for count in meals_per_product.values())
+
+
+def test_variety_uses_many_products():
+    plan = generate_day_plan(_big_fridge(), compute_targets(_profile(Goal.gain)), DietaryPrefs())
+    used = {it.product_name for m in plan.meals for it in m.items}
+    assert len(used) >= 4  # not just chicken+rice on repeat
+
+
+def test_drinks_excluded_from_plan():
+    fridge = [FridgeItem(product=SODA, quantity_g=1000), FridgeItem(product=CHICKEN, quantity_g=300)]
+    plan = generate_day_plan(fridge, compute_targets(_profile()), DietaryPrefs())
+    assert all(it.product_name != SODA.name for m in plan.meals for it in m.items)
