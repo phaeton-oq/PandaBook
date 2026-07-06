@@ -20,6 +20,7 @@ _load_env()
 
 class Settings:
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./pandabook.db")
+    SECRET_KEY: str = os.getenv("PANDA_SECRET_KEY", "dev-change-me-in-production")
     # LLM: Cerebras (OpenAI-compatible) running gpt-oss-120b — recipe generation
     LLM_API_KEY: str = os.getenv("CEREBRAS_API_KEY", "")
     LLM_BASE_URL: str = os.getenv("LLM_BASE_URL", "https://api.cerebras.ai/v1")
