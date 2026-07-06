@@ -11,13 +11,14 @@ from typing import Literal
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
+from app.api.auth_utils import get_current_user
 from app.core.diet_engine import generate_day_plan
 from app.core.nutrition import compute_targets
 from app.core.recommender import recommend
 from app.db import models
-from app.db.converters import product_to_schema
+from app.db.converters import fridge_to_schema, product_to_schema, user_to_profile
 from app.db.session import get_db
 from app.integrations.llm import explain_plan, suggest_recipe
 from app.schemas import (
@@ -107,6 +108,34 @@ def plan(req: PlanRequest, db: Session = Depends(get_db)) -> PlanResponse:
         explanation, recipe = _enrich_thinking(req.profile, day_plan, req.request)
 
     return PlanResponse(mode=req.mode, targets=targets, plan=day_plan,
+                        shopping_list=shopping, explanation=explanation, recipe=recipe)
+
+
+@router.get("/plan/me", response_model=PlanResponse)
+def plan_me(
+    mode: Mode = "fast",
+    request: str | None = None,
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> PlanResponse:
+    """Build the plan straight from the logged-in user's saved fridge + profile."""
+    profile = user_to_profile(user)
+    rows = db.scalars(
+        select(models.FridgeItem)
+        .where(models.FridgeItem.user_id == user.id)
+        .options(joinedload(models.FridgeItem.product))
+    ).all()
+    fridge = [fridge_to_schema(r) for r in rows]
+
+    targets = compute_targets(profile)
+    day_plan = generate_day_plan(fridge, targets, profile.prefs)
+    shopping = recommend(_catalog(db), targets, day_plan.totals, profile.prefs)
+
+    explanation = recipe = None
+    if mode == "thinking":
+        explanation, recipe = _enrich_thinking(profile, day_plan, request)
+
+    return PlanResponse(mode=mode, targets=targets, plan=day_plan,
                         shopping_list=shopping, explanation=explanation, recipe=recipe)
 
 

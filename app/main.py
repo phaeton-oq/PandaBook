@@ -9,7 +9,7 @@ Run:  uvicorn app.main:app --reload
 from a2wsgi import WSGIMiddleware
 from fastapi import FastAPI
 
-from app.api import routes_auth, routes_diet, routes_fridge, routes_progress
+from app.api import routes_auth, routes_diet, routes_fridge, routes_products, routes_progress
 from app.config import settings
 from app.db.session import init_db
 from app.flask_layer.flask_app import flask_app
@@ -30,6 +30,7 @@ app.include_router(routes_diet.router)
 app.include_router(routes_fridge.router)
 app.include_router(routes_auth.router)
 app.include_router(routes_progress.router)
+app.include_router(routes_products.router)
 
 # Flask must be mounted LAST — it catches everything not under /api.
 app.mount("/", WSGIMiddleware(flask_app))
