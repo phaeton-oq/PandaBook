@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PandaBook - Список покупок</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="land-shop.css">
+    <link rel="stylesheet" href="ui.css">
+</head>
+<body>
+    <div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
+    <nav class="sidebar-menu" id="sidebarMenu">
+        <div class="sidebar-header">
+            <span class="sidebar-logo">PandaBook</span>
+            <button class="close-menu-btn" onclick="toggleMenu()">✕</button>
+        </div>
+        <ul class="menu-links">
+            <li><a href="profile.html" class="menu-item">Профиль</a></li>
+            <li><a href="dashboard.html" class="menu-item">Главный экран</a></li>
+            <li><a href="fridge.html" class="menu-item">Мой холодильник</a></li>
+            <li><a href="shopping.html" class="menu-item active">Мои покупки</a></li>
+            <li><a href="landing.html#pricing" class="menu-item">Купить подписку</a></li>
+        </ul>
+    </nav>
+
+    <div class="main-card">
+        <header class="header-section">
+            <div class="logo-area">
+                <button class="hamburger-btn" onclick="toggleMenu()">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 12H21M3 6H21M3 18H21" stroke="#4c7753" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <span class="logo">PandaBook</span>
+            </div>
+            <h2 class="page-title">Список докупок</h2>
+        </header>
+        <div class="fridge-content">
+            <div class="table-wrapper">
+                <table class="product-table">
+                    <thead>
+                        <tr>
+                            <th>Продукт</th>
+                            <th>Рекомендуемый объем</th>
+                            <th>Обоснование ИИ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Филе индейки</td>
+                            <td>800 г</td>
+                            <td><span class="reason-tag vitamin-tag">Покроет дефицит белка</span></td>
+                        </tr>
+                        <tr>
+                            <td>Брокколи свежая</td>
+                            <td>400 г</td>
+                            <td><span class="reason-tag energy-tag">Клетчатка для сытости</span></td>
+                        </tr>
+                        <tr>
+                            <td>Греческий йогурт</td>
+                            <td>3 шт</td>
+                            <td><span class="reason-tag alert-tag">Взамен истекающего продукта</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="api.js"></script>
+    <script src="ui.js"></script>
+    <script>
+        function toggleMenu() {
+            document.getElementById('sidebarMenu').classList.toggle('open');
+            document.getElementById('menuOverlay').classList.toggle('open');
+        }
+
+        async function loadShopping() {
+            const tbody = document.querySelector('.product-table tbody');
+            try {
+                const r = await api("GET", "/api/diet/plan/me?mode=fast");
+                const list = r.shopping_list || [];
+                tbody.innerHTML = list.length
+                    ? list.map(s => `
+                        <tr>
+                            <td>${s.product_name}</td>
+                            <td>${s.grams} г</td>
+                            <td><span class="reason-tag vitamin-tag">${s.reason}</span></td>
+                        </tr>`).join('')
+                    : '<tr><td colspan="3">Докупать нечего — холодильник покрывает норму 🎉</td></tr>';
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="3">Ошибка: ${apiError(e)}</td></tr>`;
+            }
+        }
+
+        if (requireAuth()) loadShopping();
+    </script>
+</body>
+</html>

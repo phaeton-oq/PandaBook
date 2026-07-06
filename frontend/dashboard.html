@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PandaBook - Главный экран</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="ui.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
+
+    <nav class="sidebar-menu" id="sidebarMenu">
+        <div class="sidebar-header">
+            <span class="sidebar-logo">PandaBook</span>
+            <button class="close-menu-btn" onclick="toggleMenu()">✕</button>
+        </div>
+        <ul class="menu-links">
+            <li><a href="profile.html" class="menu-item">Профиль</a></li>
+            <li><a href="dashboard.html" class="menu-item active">Главный экран</a></li>
+            <li><a href="fridge.html" class="menu-item">Мой холодильник</a></li>
+            <li><a href="shopping.html" class="menu-item">Мои покупки</a></li>
+            <li><a href="landing.html#pricing" class="menu-item">Купить подписку</a></li>
+        </ul>
+    </nav>
+
+    <div class="main-card">
+        <header class="header-section">
+            <div class="logo-area">
+                <button class="hamburger-btn" onclick="toggleMenu()">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 12H21M3 6H21M3 18H21" stroke="#4c7753" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <h1 class="logo">PandaBook</h1>
+            </div>
+            
+            <div class="mode-switcher">
+                <button class="mode-btn" id="btn-fast" onclick="setMode('fast')">Быстрый</button>
+                <button class="mode-btn active" id="btn-thinking" onclick="setMode('thinking')">Думающий (pro)</button>
+            </div>
+        </header>
+
+        <section class="panda-widget" id="pandaWidget" style="display:none;">
+            <span class="panda-emoji" id="pandaEmoji">🐼</span>
+            <div>
+                <strong class="panda-label" id="pandaLabel">Загрузка…</strong>
+                <span class="panda-streak" id="pandaStreak"></span>
+            </div>
+        </section>
+
+        <section class="kbzhu-container">            <div class="kbzhu-card">
+                <span class="kbzhu-title">Каллории</span>
+                <span class="kbzhu-value">1500 / 2000ккал</span>
+                <div class="progress-bg"><div class="progress-bar" style="width: 75%;"></div></div>
+            </div>
+            <div class="kbzhu-card">
+                <span class="kbzhu-title">Белки</span>
+                <span class="kbzhu-value">80 / 120г</span>
+                <div class="progress-bg"><div class="progress-bar" style="width: 66%;"></div></div>
+            </div>
+            <div class="kbzhu-card">
+                <span class="kbzhu-title">Жиры</span>
+                <span class="kbzhu-value">68 / 80г</span>
+                <div class="progress-bg"><div class="progress-bar" style="width: 85%;"></div></div>
+            </div>
+            <div class="kbzhu-card">
+                <span class="kbzhu-title">Углеводы</span>
+                <span class="kbzhu-value">225 / 250г</span>
+                <div class="progress-bg"><div class="progress-bar" style="width: 90%;"></div></div>
+            </div>
+        </section>
+
+        <div class="notes-block">
+            <strong>Заметка ИИ:</strong> В ужине рекомендуется снизить количество быстрых углеводов для лучшего сна.
+        </div>
+
+        <section class="meals-container">
+            <div class="meal-accordion">
+                <div class="meal-header" onclick="toggleMeal(this)">
+                    <span class="meal-title">Завтрак</span>
+                    <span class="arrow-icon">▼</span>
+                </div>
+                <div class="meal-content">
+                    <div class="product-row">
+                        <span class="product-name">Овсяная каша на молоке (250г)</span>
+                        <span class="product-kcal">310 ккал</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="meal-accordion">
+                <div class="meal-header" onclick="toggleMeal(this)">
+                    <span class="meal-title">Обед</span>
+                    <span class="arrow-icon">▼</span>
+                </div>
+                <div class="meal-content">
+                    <div class="product-row">
+                        <span class="product-name">Куриное филе с рисом (350г)</span>
+                        <span class="product-kcal">480 ккал</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="meal-accordion">
+                <div class="meal-header" onclick="toggleMeal(this)">
+                    <span class="meal-title">Ужин</span>
+                    <span class="arrow-icon">▼</span>
+                </div>
+                <div class="meal-content">
+                    <div class="product-row">
+                        <span class="product-name">Салат с тунцом (200г)</span>
+                        <span class="product-kcal">290 ккал</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="meal-accordion">
+                <div class="meal-header" onclick="toggleMeal(this)">
+                    <span class="meal-title">Перекус</span>
+                    <span class="arrow-icon">▼</span>
+                </div>
+                <div class="meal-content">
+                    <div class="product-row">
+                        <span class="product-name">Йогурт натуральный <span style="color:#e3a678;">скоро истекает</span></span>
+                        <span class="product-kcal">120 ккал</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div id="thinking-features">
+            <section class="ai-explanation-card">
+                <h2 class="ai-title">Почему такой рацион?</h2>
+                <p class="ai-text">Этот план питания оптимизирован под вашу цель дефицита калорий с сохранением высокого уровня белка. Сложные углеводы в обеде обеспечат энергией на весь день.</p>
+                
+                <div class="recipe-box">
+                    <h3 class="recipe-title">Рекомендованный рецепт</h3>
+                    <p class="recipe-text"><strong>Куриное филе с рисом:</strong> Обжарить филе, отварить бурый рис 1:2. Подавать с зеленью.</p>
+                </div>
+            </section>
+
+            <section class="request-container">
+                <br>
+                <div class="request-box">
+                    <input type="text" placeholder="Хочу побольше белка или убрать рыбу..." class="request-input">
+                    <button class="request-btn">Изменить</button>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="api.js"></script>
+    <script src="ui.js"></script>
+    <script>        let currentMode = 'fast';
+        let currentRequest = '';
+        const MEAL_NAMES = { breakfast: "Завтрак", lunch: "Обед", dinner: "Ужин", snack: "Перекус" };
+
+        function toggleMenu() {
+            document.getElementById('sidebarMenu').classList.toggle('open');
+            document.getElementById('menuOverlay').classList.toggle('open');
+        }
+        function toggleMeal(element) { element.parentElement.classList.toggle('open'); }
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('btn-fast').classList.toggle('active', mode === 'fast');
+            document.getElementById('btn-thinking').classList.toggle('active', mode === 'thinking');
+            document.getElementById('thinking-features').style.display = mode === 'thinking' ? 'block' : 'none';
+            loadPlan();
+        }
+
+        function bar(cur, tgt) { return tgt ? Math.min(100, Math.round(cur / tgt * 100)) : 0; }
+
+        function renderKbzhu(t, tot) {
+            const rows = [
+                ["Калории", tot.kcal, t.kcal, "ккал"],
+                ["Белки", tot.protein_g, t.protein_g, "г"],
+                ["Жиры", tot.fat_g, t.fat_g, "г"],
+                ["Углеводы", tot.carbs_g, t.carbs_g, "г"],
+            ];
+            document.querySelector('.kbzhu-container').innerHTML = rows.map(([title, cur, tgt, u]) => `
+                <div class="kbzhu-card">
+                    <span class="kbzhu-title">${title}</span>
+                    <span class="kbzhu-value">${Math.round(cur)} / ${Math.round(tgt)}${u}</span>
+                    <div class="progress-bg"><div class="progress-bar" style="width: ${bar(cur, tgt)}%;"></div></div>
+                </div>`).join('');
+        }
+
+        function renderMeals(meals) {
+            const withItems = meals.filter(m => m.items.length);
+            const container = document.querySelector('.meals-container');
+            if (!withItems.length) {
+                container.innerHTML = '<div class="notes-block">Холодильник пуст или не хватает продуктов — загляни в «Мой холодильник».</div>';
+                return;
+            }
+            container.innerHTML = withItems.map(m => `
+                <div class="meal-accordion">
+                    <div class="meal-header" onclick="toggleMeal(this)">
+                        <span class="meal-title">${MEAL_NAMES[m.type] || m.type} · ${Math.round(m.kcal)} ккал</span>
+                        <span class="arrow-icon">▼</span>
+                    </div>
+                    <div class="meal-content">
+                        ${m.items.map(it => `
+                            <div class="product-row">
+                                <span class="product-name">${it.product_name} (${it.grams}г)${it.expiring_soon ? ' <span style="color:#e3a678;">скоро истекает</span>' : ''}</span>
+                                <span class="product-kcal">${it.kcal} ккал</span>
+                            </div>`).join('')}
+                    </div>
+                </div>`).join('');
+        }
+
+        function renderNotes(notes) {
+            const el = document.querySelector('.notes-block');
+            if (!el) return;
+            if (notes && notes.length) { el.innerHTML = `<strong>Заметка:</strong> ${notes.join(' ')}`; el.style.display = 'block'; }
+            else el.style.display = 'none';
+        }
+
+        function renderThinking(r) {
+            document.querySelector('.ai-text').textContent =
+                r.explanation || 'Переключитесь в режим «Думающий», чтобы получить объяснение и рецепт от ИИ.';
+            const recipe = r.recipe;
+            const box = document.querySelector('.recipe-box');
+            if (recipe && recipe.steps && recipe.steps.length) {
+                box.style.display = 'block';
+                box.querySelector('.recipe-title').textContent = recipe.title;
+                box.querySelector('.recipe-text').innerHTML = recipe.steps.map((s, i) => `${i + 1}. ${s}`).join('<br>');
+            } else { box.style.display = 'none'; }
+        }
+
+        async function loadProgress() {
+            try {
+                const p = await api("GET", "/api/progress/dashboard");
+                document.getElementById("pandaWidget").style.display = "flex";
+                document.getElementById("pandaEmoji").textContent = p.panda_emoji;
+                document.getElementById("pandaLabel").textContent = p.panda_label;
+                document.getElementById("pandaStreak").textContent =
+                    p.streak > 0 ? `Серия: ${p.streak} ${p.streak === 1 ? "день" : "дней"} в норме 🔥` : "Начни серию — попади в норму сегодня!";
+            } catch (e) {
+                console.warn("progress", e);
+            }
+        }
+
+        async function loadPlan() {
+            const notes = document.querySelector('.notes-block');
+            if (currentMode === 'thinking' && notes) { notes.style.display = 'block'; notes.innerHTML = '🧠 Модель думает…'; }
+            try {
+                let url = `/api/diet/plan/me?mode=${currentMode}`;
+                if (currentMode === 'thinking' && currentRequest) url += '&request=' + encodeURIComponent(currentRequest);
+                const r = await api("GET", url);
+                renderKbzhu(r.targets, r.plan.totals);
+                renderMeals(r.plan.meals);
+                renderNotes(r.plan.notes);
+                if (currentMode === 'thinking') renderThinking(r);
+            } catch (e) {
+                if (notes) { notes.style.display = 'block'; notes.innerHTML = 'Не удалось загрузить рацион: ' + apiError(e); }
+                toast('Не удалось загрузить рацион: ' + apiError(e), 'error');
+            }
+        }
+
+        if (requireAuth()) {
+            document.querySelector('.kbzhu-container').innerHTML =
+                Array(4).fill('<div class="kbzhu-card"><div class="skeleton-bar" style="width:60%;margin-bottom:8px;"></div><div class="skeleton-bar"></div></div>').join('');
+            document.querySelector('.meals-container').innerHTML = '<div class="notes-block">Загрузка рациона…</div>';
+            loadProgress();            const reqBtn = document.querySelector('.request-btn');
+            if (reqBtn) reqBtn.addEventListener('click', () => {
+                currentRequest = document.querySelector('.request-input').value.trim();
+                loadPlan();
+            });
+            setMode('fast');  // instant first paint; user can switch to thinking
+        }
+    </script>
+</body>
+</html>

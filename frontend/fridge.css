@@ -1,0 +1,325 @@
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #93b18c;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        .sidebar-menu {
+            position: fixed;
+            top: 0;
+            left: -320px;
+            width: 300px;
+            height: 100%;
+            background-color: #dedcd1;
+            box-shadow: 5px 0 20px rgba(0,0,0,0.1);
+            z-index: 1000;
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 30px 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .sidebar-menu.open {
+            left: 0;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-logo {
+            color: #4c7753;
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: -1px;
+        }
+
+        .close-menu-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #4c7753;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .menu-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .menu-item {
+            display: block;
+            text-decoration: none;
+            color: #1a1a1a;
+            font-size: 18px;
+            font-weight: 700;
+            padding: 14px 18px;
+            background-color: #cbcbbf;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background-color: #557e5b;
+            color: #dedcd1;
+        }
+
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            z-index: 999;
+            display: none;
+        }
+
+        .menu-overlay.open {
+            display: block;
+        }
+
+        .main-card {
+            background-color: #dedcd1;
+            width: 100%;
+            max-width: 1100px;
+            border-radius: 40px;
+            padding: 45px 50px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #cbcbbf;
+            padding-bottom: 20px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .hamburger-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .hamburger-btn:hover {
+            background-color: #cbcbbf;
+        }
+
+        .logo {
+            color: #4c7753;
+            font-size: 50px;
+            font-weight: 900;
+            letter-spacing: -1.5px;
+        }
+
+        .page-title {
+            font-size: 20px;
+            color: #5d605e;
+            font-weight: 700;
+        }
+
+        .search-add-section {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .search-add-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .search-panel, .add-panel {
+            background-color: rgba(203, 203, 191, 0.4);
+            padding: 25px;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            color: #4c7753;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-control {
+            width: 100%;
+            background-color: #cbcbbf;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a1a;
+            outline: none;
+        }
+
+        .form-control::placeholder {
+            color: #6d706e;
+            font-weight: 400;
+        }
+
+        .btn {
+            background-color: #557e5b;
+            color: #dedcd1;
+            border: none;
+            border-radius: 14px;
+            padding: 14px 24px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn:hover {
+            background-color: #436448;
+        }
+
+        .btn-secondary {
+            background-color: #cbcbbf;
+            color: #1a1a1a;
+        }
+
+        .btn-secondary:hover {
+            background-color: #b5b5a7;
+        }
+        .fridge-content {
+            background-color: rgba(203, 203, 191, 0.4);
+            padding: 25px;
+            border-radius: 20px;
+        }
+
+        .product-table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .product-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .product-table th {
+            padding: 12px 16px;
+            color: #5d605e;
+            font-size: 14px;
+            font-weight: 700;
+            border-bottom: 2px solid #cbcbbf;
+        }
+
+        .product-table td {
+            padding: 16px;
+            border-bottom: 1px solid #cbcbbf;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .product-row:last-child td {
+            border-bottom: none;
+        }
+        .badge-warning {
+            background-color: #e07a5f;
+            color: #ffffff;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: 12px;
+        }
+
+        .actions-cell {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .action-btn:hover {
+            background-color: #cbcbbf;
+        }
+
+        .search-results-dropdown {
+            background-color: #cbcbbf;
+            border-radius: 12px;
+            margin-top: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            flex-direction: column;
+            position: absolute;
+            width: 100%;
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .search-results-dropdown.active {
+            display: flex;
+        }
+
+        .search-result-item {
+            padding: 12px 18px;
+            font-weight: 700;
+            color: #1a1a1a;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .search-result-item:hover {
+            background-color: #557e5b;
+            color: #dedcd1;
+        }

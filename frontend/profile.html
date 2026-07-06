@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PandaBook - Профиль</title>
+    <link rel="stylesheet" href="profile.css">
+    <link rel="stylesheet" href="ui.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
+
+    <nav class="sidebar-menu" id="sidebarMenu">
+        <div class="sidebar-header">
+            <span class="sidebar-logo">PandaBook</span>
+            <button class="close-menu-btn" onclick="toggleMenu()">✕</button>
+        </div>
+        <ul class="menu-links">
+            <li><a href="profile.html" class="menu-item active">Профиль</a></li>
+            <li><a href="dashboard.html" class="menu-item">Главный экран</a></li>
+            <li><a href="fridge.html" class="menu-item">Мой холодильник</a></li>
+            <li><a href="shopping.html" class="menu-item">Мои покупки</a></li>
+            <li><a href="landing.html#pricing" class="menu-item">Купить подписку</a></li>
+        </ul>
+    </nav>
+
+    <div class="main-card">
+        <header class="header-section">
+            <div class="logo-area">
+                <button class="hamburger-btn" onclick="toggleMenu()">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 12H21M3 6H21M3 18H21" stroke="#4c7753" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <h1 class="logo">PandaBook</h1>
+            </div>
+            <h2 class="page-title">Настройки профиля</h2>
+        </header>
+
+        <form class="profile-form">
+            <div class="form-section">
+                <h3 class="section-title">Личные данные</h3>
+                <div class="grid-inputs">
+                    <div class="input-group">
+                        <label for="gender">Пол</label>
+                        <select id="gender">
+                            <option value="male">Мужской</option>
+                            <option value="female">Женский</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="age">Возраст</label>
+                        <input type="number" id="age" value="25" placeholder="Лет">
+                    </div>
+                    <div class="input-group">
+                        <label for="weight">Вес (кг)</label>
+                        <input type="number" id="weight" value="70" placeholder="кг">
+                    </div>
+                    <div class="input-group">
+                        <label for="height">Рост (см)</label>
+                        <input type="number" id="height" value="175" placeholder="см">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="section-title">Уровень физической активности</h3>
+                <div class="activity-selector">
+                    <label class="activity-card">
+                        <input type="radio" name="activity" value="1">
+                        <div class="card-content">
+                            <strong>Минимальный</strong>
+                            <span>Сидячая работа, редкие прогулки</span>
+                        </div>
+                    </label>
+                    <label class="activity-card active">
+                        <input type="radio" name="activity" value="2" checked>
+                        <div class="card-content">
+                            <strong>Слабый</strong>
+                            <span>Легкие тренировки 1-3 раза в неделю</span>
+                        </div>
+                    </label>
+                    <label class="activity-card">
+                        <input type="radio" name="activity" value="3">
+                        <div class="card-content">
+                            <strong>Умеренный</strong>
+                            <span>Интенсивный фитнес 3-5 раз в неделю</span>
+                        </div>
+                    </label>
+                    <label class="activity-card">
+                        <input type="radio" name="activity" value="4">
+                        <div class="card-content">
+                            <strong>Тяжелый</strong>
+                            <span>Тяжелые тренировки почти каждый день</span>
+                        </div>
+                    </label>
+                    <label class="activity-card">
+                        <input type="radio" name="activity" value="5">
+                        <div class="card-content">
+                            <strong>Экстремальный</strong>
+                            <span>Профессиональный спорт / тяжелый физ. труд</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="section-title">Цели и ограничения</h3>
+                
+                <div class="input-group full-width" style="margin-bottom: 20px;">
+                    <label for="goal">Главная цель</label>
+                    <select id="goal">
+                        <option value="lose">Похудеть / Снижение веса</option>
+                        <option value="maintain" selected>Поддерживать форму</option>
+                        <option value="gain">Набрать мышечную массу</option>
+                    </select>
+                </div>
+
+                <label class="group-inner-label">Ограничения в питании</label>
+                <div class="checkbox-grid">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" id="vegan">
+                        <span class="box"></span> Веган
+                    </label>
+                    <label class="custom-checkbox">
+                        <input type="checkbox" id="vegetarian">
+                        <span class="box"></span> Вегетарианец
+                    </label>
+                    <label class="custom-checkbox">
+                        <input type="checkbox" id="halal">
+                        <span class="box"></span> Халяль
+                    </label>
+                    <label class="custom-checkbox">
+                        <input type="checkbox" id="gluten">
+                        <span class="box"></span> Без глютена
+                    </label>
+                    <label class="custom-checkbox">
+                        <input type="checkbox" id="lactose">
+                        <span class="box"></span> Без лактозы
+                    </label>
+                </div>
+
+                <div class="input-group full-width" style="margin-top: 20px;">
+                    <label for="allergens">Аллергены (через запятую)</label>
+                    <input type="text" id="allergens" placeholder="Например: цитрусовые, арахис, мед">
+                </div>
+            </div>
+
+            <div class="action-row">
+                <button type="submit" class="save-btn">Сохранить</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="api.js"></script>
+    <script src="ui.js"></script>
+    <script>
+        function toggleMenu() {
+            document.getElementById('sidebarMenu').classList.toggle('open');
+            document.getElementById('menuOverlay').classList.toggle('open');
+        }
+        const cards = document.querySelectorAll('.activity-card');
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                cards.forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+            });
+        });
+
+        function setActivity(num) {
+            const radio = document.querySelector(`input[name="activity"][value="${num}"]`);
+            if (!radio) return;
+            radio.checked = true;
+            cards.forEach(c => c.classList.remove('active'));
+            radio.closest('.activity-card').classList.add('active');
+        }
+
+        function fillForm(p) {
+            document.getElementById('gender').value = p.sex;
+            document.getElementById('age').value = p.age;
+            document.getElementById('weight').value = p.weight_kg;
+            document.getElementById('height').value = p.height_cm;
+            document.getElementById('goal').value = p.goal;
+            setActivity(activityToNum(p.activity));
+            const pr = p.prefs || {};
+            document.getElementById('vegan').checked = !!pr.vegan;
+            document.getElementById('vegetarian').checked = !!pr.vegetarian;
+            document.getElementById('halal').checked = !!pr.halal;
+            document.getElementById('gluten').checked = !!pr.gluten_free;
+            document.getElementById('lactose').checked = !!pr.lactose_free;
+            document.getElementById('allergens').value = (pr.allergens || []).join(', ');
+        }
+
+        function readForm() {
+            const activity = document.querySelector('input[name="activity"]:checked');
+            return {
+                sex: document.getElementById('gender').value,
+                age: +document.getElementById('age').value,
+                weight_kg: +document.getElementById('weight').value,
+                height_cm: +document.getElementById('height').value,
+                activity: activityToApi(activity ? activity.value : 3),
+                goal: document.getElementById('goal').value,
+                prefs: {
+                    vegan: document.getElementById('vegan').checked,
+                    vegetarian: document.getElementById('vegetarian').checked,
+                    halal: document.getElementById('halal').checked,
+                    gluten_free: document.getElementById('gluten').checked,
+                    lactose_free: document.getElementById('lactose').checked,
+                    allergens: document.getElementById('allergens').value
+                        .split(',').map(s => s.trim()).filter(Boolean),
+                },
+            };
+        }
+
+        if (requireAuth()) {
+            api("GET", "/api/auth/me").then(me => fillForm(me.profile)).catch(() => {});
+            document.querySelector('.profile-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                try {
+                    await api("PATCH", "/api/auth/me", { profile: readForm() });
+                    toast("Профиль сохранён ✅", "success");
+                    setTimeout(() => { location.href = "dashboard.html"; }, 600);
+                } catch (err) {
+                    toast("Не удалось сохранить: " + apiError(err), "error");
+                }
+            });
+        }
+    </script>
+</body>
+</html>

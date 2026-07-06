@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="ui.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="login-card">
+        <h1 class="logo">PandaBook</h1>
+
+        <form class="login-form" id="loginForm">
+            <div class="input-group">
+                <label for="email">Почта</label>
+                <input type="email" id="email" name="email" required autocomplete="email" placeholder="example@gmail.ru">
+            </div>
+
+            <div class="input-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="••••••••" minlength="8">
+            </div>
+
+            <div class="form-footer">
+                <span class="no-account">Нет аккаунта?</span>
+                <a href="reg.html" class="register-link">Регистрация</a>
+            </div>
+
+            <button type="submit" class="submit-btn">Войти</button>
+        </form>
+    </div>
+
+    <script src="api.js"></script>
+    <script src="ui.js"></script>
+    <script>
+        if (Auth.token) location.href = "dashboard.html";
+        document.getElementById("loginForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            if (!isValidEmail(email)) return toast("Некорректный email", "error");
+            const btn = e.target.querySelector(".submit-btn");
+            btn.disabled = true;
+            btn.textContent = "Вход…";
+            try {
+                const r = await api("POST", "/api/auth/login", { email, password });
+                Auth.token = r.access_token;
+                toast("Добро пожаловать!", "success");
+                setTimeout(() => { location.href = "dashboard.html"; }, 400);
+            } catch (err) {
+                toast("Не удалось войти: " + apiError(err), "error");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Войти";
+            }
+        });
+    </script>
+</body>
+</html>
