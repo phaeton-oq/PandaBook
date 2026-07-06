@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация</title>
+    <link rel="stylesheet" href="reg.css">
+    <link rel="stylesheet" href="ui.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="reg-card">
+        <h1 class="logo">PandaBook</h1>
+        
+        <form class="reg-form">
+            <div class="back">
+                <a href="index.html"></a>
+            </div>
+            <div class="input-group">
+                <label for="username">Имя</label>
+                <input type="text" id="username" placeholder="Ваше имя">
+            </div>
+
+            <div class="input-group">
+                <label for="email">Почта</label>
+                <input type="email" id="email" placeholder="example@gmail.ru">
+            </div>
+            
+            <div class="input-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" placeholder="минимум 8 символов" minlength="8" required autocomplete="new-password">
+            </div>
+            <div class="form-footer">
+                <span class="account">Уже есть аккаунт?</span>
+                <a href="index.html" class="enter-link">Войти</a>
+            </div>
+            <button type="submit" class="submit-btn">Регистрация</button>
+            
+
+        </form>
+    </div>
+
+    <script src="api.js"></script>
+    <script src="ui.js"></script>
+    <script>
+        document.querySelector(".reg-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector(".submit-btn");
+            const name = document.getElementById("username").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            if (!isValidEmail(email)) return toast("Некорректный email", "error");
+            if (password.length < 8) return toast("Пароль минимум 8 символов", "error");
+            btn.disabled = true;
+            btn.textContent = "Регистрация…";
+            const profile = { sex: "male", age: 25, weight_kg: 70, height_cm: 175,
+                activity: "moderate", goal: "maintain", prefs: { allergens: [] } };
+            try {
+                const r = await api("POST", "/api/auth/register", { email, password, name, profile });
+                Auth.token = r.access_token;
+                toast("Аккаунт создан!", "success");
+                setTimeout(() => { location.href = "profile.html"; }, 400);
+            } catch (err) {
+                if (err.status === 409) return toast("Такой email уже зарегистрирован", "error");
+                toast("Ошибка регистрации: " + apiError(err), "error");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Регистрация";
+            }
+        });
+    </script>
+</body>
+</html>

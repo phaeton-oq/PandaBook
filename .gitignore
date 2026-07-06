@@ -1,2 +1,15 @@
 setup-github.ps1
 .github-token
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# App
+pandabook.db
+*.db
+.env
+.env.local

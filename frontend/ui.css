@@ -1,0 +1,122 @@
+#toast-host {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.toast {
+    background: #272e24;
+    color: #dedcd1;
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 14px;
+    max-width: 320px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    opacity: 0;
+    transform: translateX(20px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.toast-success { background: #4c7753; }
+.toast-error { background: #c45c4a; }
+.toast-info { background: #557e5b; }
+
+.menu-item.menu-logout {
+    margin-top: 8px;
+    background-color: transparent;
+    color: #595959;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 10px 18px;
+}
+
+.menu-item.menu-logout:hover {
+    background-color: #cbcbbf;
+    color: #1a1a1a;
+}
+
+.panda-widget {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #cbcbbf;
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+}
+
+.panda-emoji {
+    font-size: 48px;
+    line-height: 1;
+}
+
+.panda-label {
+    display: block;
+    font-weight: 700;
+    color: #272e24;
+    font-size: 16px;
+}
+
+.panda-streak {
+    display: block;
+    font-size: 13px;
+    color: #4c7753;
+    font-weight: 700;
+    margin-top: 4px;
+}
+
+.skeleton-bar {
+    height: 8px;
+    background: linear-gradient(90deg, #cbcbbf 25%, #dedcd1 50%, #cbcbbf 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.2s infinite;
+    border-radius: 4px;
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.barcode-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.barcode-row .form-control { flex: 1; }
+.barcode-row .btn { white-space: nowrap; padding: 0 16px; }
+
+.back-btn {
+    color: #4c7753;
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+    white-space: nowrap;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background-color: rgba(203, 203, 191, 0.65);
+    border: 2px solid #b5b5a7;
+}
+
+.back-btn:hover {
+    background-color: #cbcbbf;
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}

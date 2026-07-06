@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PandaBook - Список покупок</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="land-shop.css">
+    <link rel="stylesheet" href="ui.css">
+</head>
+<body>
+    <div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
+    <nav class="sidebar-menu" id="sidebarMenu">
+        <div class="sidebar-header">
+            <span class="sidebar-logo">PandaBook</span>
+            <button class="close-menu-btn" onclick="toggleMenu()">✕</button>
+        </div>
+        <ul class="menu-links">
+            <li><a href="profile.html" class="menu-item">Профиль</a></li>
+            <li><a href="dashboard.html" class="menu-item">Главный экран</a></li>
+            <li><a href="fridge.html" class="menu-item">Мой холодильник</a></li>
+            <li><a href="shopping.html" class="menu-item active">Мои покупки</a></li>
+            <li><a href="landing.html#pricing" class="menu-item">Купить подписку</a></li>
+        </ul>
+    </nav>
+
+    <div class="main-card">
+        <header class="header-section">
+            <div class="logo-area">
+                <a href="#" id="backBtn" class="back-btn" hidden>← Назад</a>
+                <button class="hamburger-btn" onclick="toggleMenu()">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 12H21M3 6H21M3 18H21" stroke="#4c7753" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <span class="logo">PandaBook</span>
+            </div>
+            <h2 class="page-title">Список докупок</h2>
+        </header>
+        <p id="shopStatus" style="color:#5d605e;font-weight:700;margin-bottom:12px;">Формируем список…</p>
+        <div class="fridge-content">
+            <div class="table-wrapper">
+                <table class="product-table">
+                    <thead>
+                        <tr>
+                            <th>Продукт</th>
+                            <th>Рекомендуемый объём</th>
+                            <th>Обоснование</th>
+                        </tr>
+                    </thead>
+                    <tbody id="shopBody">
+                        <tr><td colspan="3">Загрузка…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="api.js"></script>
+    <script src="ui.js"></script>
+    <script>
+        function toggleMenu() {
+            document.getElementById('sidebarMenu').classList.toggle('open');
+            document.getElementById('menuOverlay').classList.toggle('open');
+        }
+
+        async function loadShopping() {
+            const tbody = document.getElementById('shopBody');
+            const status = document.getElementById('shopStatus');
+            tbody.innerHTML = '<tr><td colspan="3">Анализируем холодильник…</td></tr>';
+            status.textContent = 'Формируем список докупок…';
+            try {
+                const list = await api("GET", "/api/diet/shopping/me?mode=thinking");
+                status.textContent = list.length
+                    ? `Рекомендовано позиций: ${list.length}`
+                    : 'Докупать нечего — холодильник покрывает норму';
+                tbody.innerHTML = list.length
+                    ? list.map(s => `
+                        <tr>
+                            <td>${s.product_name}</td>
+                            <td>${s.grams} г</td>
+                            <td><span class="reason-tag vitamin-tag">${s.reason}</span></td>
+                        </tr>`).join('')
+                    : '<tr><td colspan="3">Докупать нечего — холодильник покрывает норму</td></tr>';
+            } catch (e) {
+                status.textContent = 'Ошибка загрузки';
+                tbody.innerHTML = `<tr><td colspan="3">${apiError(e)}</td></tr>`;
+                toast(apiError(e), 'error');
+            }
+        }
+
+        if (requireAuth()) loadShopping();
+    </script>
+</body>
+</html>
