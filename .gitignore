@@ -13,3 +13,5 @@ pandabook.db
 *.db
 .env
 .env.local
+promo/_raw/
+promo/ffmpeg-list.txt
