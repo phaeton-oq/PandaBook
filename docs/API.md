@@ -110,6 +110,27 @@
 > ⚠️ `thinking` дёргает LLM → ответ ~3 сек. Показывайте лоадер «🧠 думает…».
 > `fast` — мгновенный, без LLM.
 
+## Авторизация (Backend-2)
+
+### `POST /api/auth/register`
+```jsonc
+// запрос
+{ "email": "user@mail.com", "password": "min8chars", "name": "Имя", "profile": { /* UserProfile, см. выше */ } }
+// ответ
+{ "access_token": "…", "token_type": "bearer" }   // 201; 409 если email занят
+```
+### `POST /api/auth/login`
+```jsonc
+{ "email": "user@mail.com", "password": "…" }      // → access_token; 401 при неверных
+```
+### `GET /api/auth/me` 🔒
+`Authorization: Bearer <token>` → `{ id, email, name, profile }`.
+
+Токен клади в заголовок `Authorization: Bearer <token>` для всех 🔒-ручек.
+**Демо-юзер:** `demo@pandabook.local` / `demo12345`.
+
+---
+
 ## `GET /api/products` — каталог для пикера
 Список известных продуктов (для сетки/дропдауна быстрого выбора в холодильник).
 - `?q=молоко` — необязательный фильтр по названию (регистронезависимо).
