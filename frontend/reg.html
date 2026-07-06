@@ -42,5 +42,25 @@
         </form>
     </div>
 
+    <script src="api.js"></script>
+    <script>
+        document.querySelector(".reg-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const name = document.getElementById("username").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            if (password.length < 8) return alert("Пароль минимум 8 символов");
+            const profile = { sex: "male", age: 25, weight_kg: 70, height_cm: 175,
+                activity: "moderate", goal: "maintain", prefs: { allergens: [] } };
+            try {
+                const r = await api("POST", "/api/auth/register", { email, password, name, profile });
+                Auth.token = r.access_token;
+                location.href = "profile.html";  // заполнить профиль
+            } catch (err) {
+                if (err.status === 409) return alert("Такой email уже зарегистрирован");
+                alert("Ошибка регистрации: " + apiError(err));
+            }
+        });
+    </script>
 </body>
 </html>

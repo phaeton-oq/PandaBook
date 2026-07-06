@@ -34,5 +34,21 @@
         </form>
     </div>
 
+    <script src="api.js"></script>
+    <script>
+        if (Auth.token) location.href = "dashboard.html";
+        document.querySelector(".login-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            try {
+                const r = await api("POST", "/api/auth/login", { email, password });
+                Auth.token = r.access_token;
+                location.href = "dashboard.html";
+            } catch (err) {
+                alert("Не удалось войти: " + apiError(err));
+            }
+        });
+    </script>
 </body>
 </html>

@@ -88,99 +88,138 @@
         </div>
     </div>
 
+    <script src="api.js"></script>
     <script>
-        let products = [
-            { name: "Куриное филе (грудка)", weight: 600, expiry: "2026-07-08", expiringSoon: true },
-            { name: "Творог 5% Простоквашино", weight: 300, expiry: "2026-07-07", expiringSoon: true },
-            { name: "Бурый рис басмати", weight: 1000, expiry: "2026-12-15", expiringSoon: false },
-            { name: "Яйца куриные C0", weight: 450, expiry: "2026-07-25", expiringSoon: false }
-        ];
+        let selectedProduct = null;   // {product_id?|name|off_barcode} chosen from search
+        let searchHits = [];
+        let editId = -1;              // fridge item id being edited, or -1
+        let searchTimer = null;
 
         function toggleMenu() {
             document.getElementById('sidebarMenu').classList.toggle('open');
             document.getElementById('menuOverlay').classList.toggle('open');
         }
 
-        function renderProducts() {
+        const EDIT_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5d605e" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>';
+        const DEL_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e07a5f" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>';
+
+        function fmtDate(iso) {
+            if (!iso) return "—";
+            const p = iso.split('-');
+            return p.length === 3 ? `${p[2]}.${p[1]}.${p[0]}` : iso;
+        }
+        function daysUntil(iso) {
+            if (!iso) return Infinity;
+            return Math.ceil((new Date(iso) - new Date()) / 86400000);
+        }
+
+        async function loadFridge() {
             const tbody = document.getElementById('productTableBody');
-            tbody.innerHTML = '';
-            products.forEach((prod, index) => {
-                const tr = document.createElement('tr');
-                tr.className = 'product-row';
-                const dateParts = prod.expiry.split('-');
-                const formattedDate = dateParts.length === 3 ? `${dateParts[2]}.${dateParts[1]}.${dateParts[0]}` : prod.expiry;
-                let badgeHtml = prod.expiringSoon ? `<span class="badge-warning"> Скоро истекает</span>` : '';
-                tr.innerHTML = `
-                    <td>${prod.name}${badgeHtml}</td>
-                    <td>${prod.weight} г</td>
-                    <td>${formattedDate}</td>
-                    <td class="actions-cell">
-                        <button class="action-btn" onclick="editProduct(${index})">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5d605e" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                        </button>
-                        <button class="action-btn" onclick="deleteProduct(${index})">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e07a5f" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
+            try {
+                const r = await api("GET", "/api/fridge");
+                tbody.innerHTML = '';
+                r.items.forEach(({ id, item }) => {
+                    const soon = daysUntil(item.expiry_date) <= 3;
+                    const badge = soon ? '<span class="badge-warning"> Скоро истекает</span>' : '';
+                    const tr = document.createElement('tr');
+                    tr.className = 'product-row';
+                    tr.innerHTML = `
+                        <td>${item.product.name}${badge}</td>
+                        <td>${item.quantity_g} г</td>
+                        <td>${fmtDate(item.expiry_date)}</td>
+                        <td class="actions-cell">
+                            <button class="action-btn" onclick="editItem(${id}, ${item.quantity_g}, '${item.expiry_date || ''}', '${item.product.name.replace(/'/g, "")}')">${EDIT_SVG}</button>
+                            <button class="action-btn" onclick="deleteItem(${id})">${DEL_SVG}</button>
+                        </td>`;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) { console.error(e); }
         }
 
         function handleSearchInput(value) {
             const dropdown = document.getElementById('searchResults');
-            if (value.trim().length > 1) dropdown.classList.add('active');
-            else dropdown.classList.remove('active');
+            clearTimeout(searchTimer);
+            if (value.trim().length < 2) { dropdown.classList.remove('active'); return; }
+            searchTimer = setTimeout(async () => {
+                try {
+                    const [cat, off] = await Promise.all([
+                        api("GET", "/api/products?q=" + encodeURIComponent(value)),
+                        api("GET", "/api/products/search?q=" + encodeURIComponent(value) + "&limit=8"),
+                    ]);
+                    searchHits = [...cat, ...off].slice(0, 12);
+                    dropdown.innerHTML = searchHits.length
+                        ? searchHits.map((p, i) =>
+                            `<div class="search-result-item" onclick="pickHit(${i})">${p.name} · ${Math.round(p.kcal_100)} ккал</div>`).join('')
+                        : '<div class="search-result-item">Ничего не найдено</div>';
+                    dropdown.classList.add('active');
+                } catch (e) { console.error(e); }
+            }, 300);
         }
 
-        function selectSearchProduct(name, defaultWeight) {
-            document.getElementById('prodName').value = name;
-            document.getElementById('prodWeight').value = defaultWeight;
-            const today = new Date();
-            today.setDate(today.getDate() + 5);
+        function pickHit(i) {
+            const p = searchHits[i];
+            selectedProduct = { product_id: p.id ?? undefined, name: p.name, off_barcode: p.off_barcode ?? undefined };
+            document.getElementById('prodName').value = p.name;
+            const today = new Date(); today.setDate(today.getDate() + 5);
             document.getElementById('prodExpiry').value = today.toISOString().split('T')[0];
             document.getElementById('searchResults').classList.remove('active');
             document.getElementById('offSearchInput').value = '';
         }
-
-        function saveProduct() {
-            const name = document.getElementById('prodName').value.trim();
-            const weight = parseInt(document.getElementById('prodWeight').value);
-            const expiry = document.getElementById('prodExpiry').value;
-            const editIndex = parseInt(document.getElementById('editIndex').value);
-            if (!name || !weight || !expiry) { alert('Пожалуйста, заполните все поля!'); return; }
-            const diffTime = new Date(expiry) - new Date();
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            const productData = { name, weight, expiry, expiringSoon: diffDays <= 2 };
-            if (editIndex > -1) products[editIndex] = productData;
-            else products.push(productData);
-            resetForm();
-            renderProducts();
+        // fallback for any static suggestion markup
+        function selectSearchProduct(name) {
+            selectedProduct = { name };
+            document.getElementById('prodName').value = name;
+            document.getElementById('searchResults').classList.remove('active');
         }
 
-        function editProduct(index) {
-            const prod = products[index];
-            document.getElementById('prodName').value = prod.name;
-            document.getElementById('prodWeight').value = prod.weight;
-            document.getElementById('prodExpiry').value = prod.expiry;
-            document.getElementById('editIndex').value = index;
+        async function saveProduct() {
+            const name = document.getElementById('prodName').value.trim();
+            const weight = parseInt(document.getElementById('prodWeight').value);
+            const expiry = document.getElementById('prodExpiry').value || null;
+            if (!name || !weight) { alert('Укажите продукт и количество'); return; }
+            try {
+                if (editId > 0) {
+                    await api("PATCH", "/api/fridge/" + editId, { quantity_g: weight, expiry_date: expiry });
+                } else {
+                    const body = { quantity_g: weight, expiry_date: expiry };
+                    if (selectedProduct && selectedProduct.name === name) {
+                        if (selectedProduct.product_id) body.product_id = selectedProduct.product_id;
+                        else if (selectedProduct.off_barcode) body.off_barcode = selectedProduct.off_barcode;
+                        else body.name = name;
+                    } else { body.name = name; }
+                    await api("POST", "/api/fridge", body);
+                }
+                resetForm();
+                loadFridge();
+            } catch (e) { alert("Не удалось сохранить: " + apiError(e)); }
+        }
+
+        function editItem(id, weight, expiry, name) {
+            editId = id;
+            selectedProduct = null;
+            document.getElementById('prodName').value = name;
+            document.getElementById('prodWeight').value = weight;
+            document.getElementById('prodExpiry').value = expiry;
             document.getElementById('formTitle').innerText = "📝 Редактировать продукт";
             document.getElementById('cancelEditBtn').style.display = "inline-block";
         }
 
-        function deleteProduct(index) {
-            if(confirm('Удалить этот продукт?')) { products.splice(index, 1); renderProducts(); }
+        async function deleteItem(id) {
+            if (!confirm('Удалить этот продукт?')) return;
+            try { await api("DELETE", "/api/fridge/" + id); loadFridge(); }
+            catch (e) { alert("Ошибка: " + apiError(e)); }
         }
 
         function resetForm() {
+            editId = -1; selectedProduct = null;
             document.getElementById('prodName').value = '';
             document.getElementById('prodWeight').value = '';
             document.getElementById('prodExpiry').value = '';
-            document.getElementById('editIndex').value = '-1';
             document.getElementById('formTitle').innerText = "➕ Добавить продукт вручную";
             document.getElementById('cancelEditBtn').style.display = "none";
         }
-        renderProducts();
+
+        if (requireAuth()) loadFridge();
     </script>
 </body>
 </html>

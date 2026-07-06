@@ -145,31 +145,108 @@
         </div>
     </div>
 
+    <script src="api.js"></script>
     <script>
+        let currentMode = 'fast';
+        let currentRequest = '';
+        const MEAL_NAMES = { breakfast: "Завтрак", lunch: "Обед", dinner: "Ужин", snack: "Перекус" };
+
         function toggleMenu() {
-            const sidebar = document.getElementById('sidebarMenu');
-            const overlay = document.getElementById('menuOverlay');
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('open');
+            document.getElementById('sidebarMenu').classList.toggle('open');
+            document.getElementById('menuOverlay').classList.toggle('open');
         }
+        function toggleMeal(element) { element.parentElement.classList.toggle('open'); }
 
         function setMode(mode) {
-            const btnFast = document.getElementById('btn-fast');
-            const btnThinking = document.getElementById('btn-thinking');
-            const thinkingFeatures = document.getElementById('thinking-features');
-            if (mode === 'fast') {
-                btnFast.classList.add('active');
-                btnThinking.classList.remove('active');
-                thinkingFeatures.style.display = 'none';
-            } else {
-                btnThinking.classList.add('active');
-                btnFast.classList.remove('active');
-                thinkingFeatures.style.display = 'block';
+            currentMode = mode;
+            document.getElementById('btn-fast').classList.toggle('active', mode === 'fast');
+            document.getElementById('btn-thinking').classList.toggle('active', mode === 'thinking');
+            document.getElementById('thinking-features').style.display = mode === 'thinking' ? 'block' : 'none';
+            loadPlan();
+        }
+
+        function bar(cur, tgt) { return tgt ? Math.min(100, Math.round(cur / tgt * 100)) : 0; }
+
+        function renderKbzhu(t, tot) {
+            const rows = [
+                ["Калории", tot.kcal, t.kcal, "ккал"],
+                ["Белки", tot.protein_g, t.protein_g, "г"],
+                ["Жиры", tot.fat_g, t.fat_g, "г"],
+                ["Углеводы", tot.carbs_g, t.carbs_g, "г"],
+            ];
+            document.querySelector('.kbzhu-container').innerHTML = rows.map(([title, cur, tgt, u]) => `
+                <div class="kbzhu-card">
+                    <span class="kbzhu-title">${title}</span>
+                    <span class="kbzhu-value">${Math.round(cur)} / ${Math.round(tgt)}${u}</span>
+                    <div class="progress-bg"><div class="progress-bar" style="width: ${bar(cur, tgt)}%;"></div></div>
+                </div>`).join('');
+        }
+
+        function renderMeals(meals) {
+            const withItems = meals.filter(m => m.items.length);
+            const container = document.querySelector('.meals-container');
+            if (!withItems.length) {
+                container.innerHTML = '<div class="notes-block">Холодильник пуст или не хватает продуктов — загляни в «Мой холодильник».</div>';
+                return;
+            }
+            container.innerHTML = withItems.map(m => `
+                <div class="meal-accordion">
+                    <div class="meal-header" onclick="toggleMeal(this)">
+                        <span class="meal-title">${MEAL_NAMES[m.type] || m.type} · ${Math.round(m.kcal)} ккал</span>
+                        <span class="arrow-icon">▼</span>
+                    </div>
+                    <div class="meal-content">
+                        ${m.items.map(it => `
+                            <div class="product-row">
+                                <span class="product-name">${it.product_name} (${it.grams}г)${it.expiring_soon ? ' <span style="color:#e3a678;">скоро истекает</span>' : ''}</span>
+                                <span class="product-kcal">${it.kcal} ккал</span>
+                            </div>`).join('')}
+                    </div>
+                </div>`).join('');
+        }
+
+        function renderNotes(notes) {
+            const el = document.querySelector('.notes-block');
+            if (!el) return;
+            if (notes && notes.length) { el.innerHTML = `<strong>Заметка:</strong> ${notes.join(' ')}`; el.style.display = 'block'; }
+            else el.style.display = 'none';
+        }
+
+        function renderThinking(r) {
+            document.querySelector('.ai-text').textContent =
+                r.explanation || 'Переключитесь в режим «Думающий», чтобы получить объяснение и рецепт от ИИ.';
+            const recipe = r.recipe;
+            const box = document.querySelector('.recipe-box');
+            if (recipe && recipe.steps && recipe.steps.length) {
+                box.style.display = 'block';
+                box.querySelector('.recipe-title').textContent = recipe.title;
+                box.querySelector('.recipe-text').innerHTML = recipe.steps.map((s, i) => `${i + 1}. ${s}`).join('<br>');
+            } else { box.style.display = 'none'; }
+        }
+
+        async function loadPlan() {
+            const notes = document.querySelector('.notes-block');
+            if (currentMode === 'thinking' && notes) { notes.style.display = 'block'; notes.innerHTML = '🧠 Модель думает…'; }
+            try {
+                let url = `/api/diet/plan/me?mode=${currentMode}`;
+                if (currentMode === 'thinking' && currentRequest) url += '&request=' + encodeURIComponent(currentRequest);
+                const r = await api("GET", url);
+                renderKbzhu(r.targets, r.plan.totals);
+                renderMeals(r.plan.meals);
+                renderNotes(r.plan.notes);
+                if (currentMode === 'thinking') renderThinking(r);
+            } catch (e) {
+                if (notes) { notes.style.display = 'block'; notes.innerHTML = 'Не удалось загрузить рацион: ' + apiError(e); }
             }
         }
 
-        function toggleMeal(element) {
-            element.parentElement.classList.toggle('open');
+        if (requireAuth()) {
+            const reqBtn = document.querySelector('.request-btn');
+            if (reqBtn) reqBtn.addEventListener('click', () => {
+                currentRequest = document.querySelector('.request-input').value.trim();
+                loadPlan();
+            });
+            setMode('fast');  // instant first paint; user can switch to thinking
         }
     </script>
 </body>

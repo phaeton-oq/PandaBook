@@ -138,3 +138,22 @@ def login(req: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
 @router.get("/me", response_model=MeResponse)
 def me(user: Annotated[models.User, Depends(get_current_user)]) -> MeResponse:
     return MeResponse(id=user.id, email=user.email, name=user.name, profile=_user_to_profile(user))
+
+
+class UpdateMeRequest(BaseModel):
+    name: str | None = Field(default=None, max_length=100)
+    profile: UserProfile
+
+
+@router.patch("/me", response_model=MeResponse)
+def update_me(
+    req: UpdateMeRequest,
+    user: Annotated[models.User, Depends(get_current_user)],
+    db: Session = Depends(get_db),
+) -> MeResponse:
+    if req.name is not None:
+        user.name = req.name
+    _apply_profile(user, req.profile)
+    db.commit()
+    db.refresh(user)
+    return MeResponse(id=user.id, email=user.email, name=user.name, profile=_user_to_profile(user))

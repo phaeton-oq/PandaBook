@@ -154,12 +154,11 @@
         </form>
     </div>
 
+    <script src="api.js"></script>
     <script>
         function toggleMenu() {
-            const sidebar = document.getElementById('sidebarMenu');
-            const overlay = document.getElementById('menuOverlay');
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('open');
+            document.getElementById('sidebarMenu').classList.toggle('open');
+            document.getElementById('menuOverlay').classList.toggle('open');
         }
         const cards = document.querySelectorAll('.activity-card');
         cards.forEach(card => {
@@ -168,6 +167,65 @@
                 card.classList.add('active');
             });
         });
+
+        function setActivity(num) {
+            const radio = document.querySelector(`input[name="activity"][value="${num}"]`);
+            if (!radio) return;
+            radio.checked = true;
+            cards.forEach(c => c.classList.remove('active'));
+            radio.closest('.activity-card').classList.add('active');
+        }
+
+        function fillForm(p) {
+            document.getElementById('gender').value = p.sex;
+            document.getElementById('age').value = p.age;
+            document.getElementById('weight').value = p.weight_kg;
+            document.getElementById('height').value = p.height_cm;
+            document.getElementById('goal').value = p.goal;
+            setActivity(activityToNum(p.activity));
+            const pr = p.prefs || {};
+            document.getElementById('vegan').checked = !!pr.vegan;
+            document.getElementById('vegetarian').checked = !!pr.vegetarian;
+            document.getElementById('halal').checked = !!pr.halal;
+            document.getElementById('gluten').checked = !!pr.gluten_free;
+            document.getElementById('lactose').checked = !!pr.lactose_free;
+            document.getElementById('allergens').value = (pr.allergens || []).join(', ');
+        }
+
+        function readForm() {
+            const activity = document.querySelector('input[name="activity"]:checked');
+            return {
+                sex: document.getElementById('gender').value,
+                age: +document.getElementById('age').value,
+                weight_kg: +document.getElementById('weight').value,
+                height_cm: +document.getElementById('height').value,
+                activity: activityToApi(activity ? activity.value : 3),
+                goal: document.getElementById('goal').value,
+                prefs: {
+                    vegan: document.getElementById('vegan').checked,
+                    vegetarian: document.getElementById('vegetarian').checked,
+                    halal: document.getElementById('halal').checked,
+                    gluten_free: document.getElementById('gluten').checked,
+                    lactose_free: document.getElementById('lactose').checked,
+                    allergens: document.getElementById('allergens').value
+                        .split(',').map(s => s.trim()).filter(Boolean),
+                },
+            };
+        }
+
+        if (requireAuth()) {
+            api("GET", "/api/auth/me").then(me => fillForm(me.profile)).catch(() => {});
+            document.querySelector('.profile-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                try {
+                    await api("PATCH", "/api/auth/me", { profile: readForm() });
+                    alert("Профиль сохранён ✅");
+                    location.href = "dashboard.html";
+                } catch (err) {
+                    alert("Не удалось сохранить: " + apiError(err));
+                }
+            });
+        }
     </script>
 </body>
 </html>
