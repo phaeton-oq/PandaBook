@@ -3,17 +3,21 @@
 GET  /api/progress/dashboard : per-day КБЖУ, streak, panda mood.
 POST /api/progress/log        : record eaten product (feeds the dashboard).
 
-Uses a demo user by default (user_id=1) until auth lands (Backend-2).
+Auth-aware: with a Bearer token the data is the logged-in user's; without one
+it falls back to the seeded demo user (id=1) so the dashboard is never empty.
 """
 from __future__ import annotations
 
 from datetime import date
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.api.auth_utils import decode_token
 from app.core.nutrition import compute_targets
 from app.core.progress import current_streak, daily_nutrition, panda_mood
 from app.db import models
@@ -22,6 +26,16 @@ from app.db.session import get_db
 from app.schemas import DayNutrition, Targets
 
 router = APIRouter(prefix="/api/progress", tags=["progress"])
+
+_bearer = HTTPBearer(auto_error=False)
+_DEMO_USER_ID = 1
+
+
+def _resolve_user_id(creds: HTTPAuthorizationCredentials | None) -> int:
+    """Logged-in user from the token, else the demo user."""
+    if creds is not None:
+        return decode_token(creds.credentials)  # raises 401 on a bad token
+    return _DEMO_USER_ID
 
 
 class DashboardResponse(BaseModel):
@@ -37,11 +51,14 @@ class LogRequest(BaseModel):
     grams: float
     meal_type: str = "mixed"
     day: date | None = None
-    user_id: int = 1
 
 
 @router.get("/dashboard", response_model=DashboardResponse)
-def dashboard(user_id: int = 1, db: Session = Depends(get_db)) -> DashboardResponse:
+def dashboard(
+    creds: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
+    db: Session = Depends(get_db),
+) -> DashboardResponse:
+    user_id = _resolve_user_id(creds)
     user = db.get(models.User, user_id)
     if user is None:
         raise HTTPException(404, "user not found")
@@ -63,11 +80,16 @@ def dashboard(user_id: int = 1, db: Session = Depends(get_db)) -> DashboardRespo
 
 
 @router.post("/log")
-def log(req: LogRequest, db: Session = Depends(get_db)) -> dict:
+def log(
+    req: LogRequest,
+    creds: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
+    db: Session = Depends(get_db),
+) -> dict:
+    user_id = _resolve_user_id(creds)
     if db.get(models.Product, req.product_id) is None:
         raise HTTPException(404, "product not found")
     db.add(models.ConsumptionLog(
-        user_id=req.user_id, product_id=req.product_id,
+        user_id=user_id, product_id=req.product_id,
         day=req.day or date.today(), meal_type=req.meal_type, grams=req.grams,
     ))
     db.commit()

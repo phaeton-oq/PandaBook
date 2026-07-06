@@ -146,9 +146,10 @@
 
 ---
 
-## `GET /api/progress/dashboard?user_id=1`
+## `GET /api/progress/dashboard`
 История КБЖУ по дням + стрик + настроение панды (геймификация).
-`user_id` пока по умолчанию `1` (демо-юзер с готовой историей).
+**Auth-aware:** с заголовком `Authorization: Bearer <token>` — данные залогиненного
+юзера; **без токена** — демо-юзер с готовой историей (для наполненного демо).
 ```jsonc
 {
   "targets": { "kcal": 2229, "protein_g": 156, "fat_g": 67, "carbs_g": 251 },
@@ -164,10 +165,11 @@
 Для графиков бери массив `days` (КБЖУ по дням). Панда: `panda_emoji` + `panda_label`.
 
 ## `POST /api/progress/log`
-Отметить съеденный продукт (обновляет дашборд).
+Отметить съеденный продукт (обновляет дашборд). Пишет в юзера из токена
+(или в демо-юзера без токена).
 ```jsonc
-// запрос
-{ "product_id": 1, "grams": 200, "meal_type": "lunch", "user_id": 1 }
+// запрос (+ опционально Authorization: Bearer <token>)
+{ "product_id": 1, "grams": 200, "meal_type": "lunch" }
 // ответ
 { "ok": true }
 ```

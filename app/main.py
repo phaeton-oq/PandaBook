@@ -8,6 +8,7 @@ Run:  uvicorn app.main:app --reload
 """
 from a2wsgi import WSGIMiddleware
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import routes_auth, routes_diet, routes_fridge, routes_products, routes_progress
 from app.config import settings
@@ -19,6 +20,16 @@ _docs = {"docs_url": "/__panda/docs", "redoc_url": None} if settings.DEBUG else 
 }
 
 app = FastAPI(title="PandaBook Core", **_docs)
+
+# Allow a frontend served from another origin (Vite/Live Server) to call /api.
+# Auth is a Bearer header (not cookies), so allow_credentials stays False and "*" is valid.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.on_event("startup")
