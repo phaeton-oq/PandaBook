@@ -21,10 +21,10 @@ _load_env()
 class Settings:
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./pandabook.db")
     SECRET_KEY: str = os.getenv("PANDA_SECRET_KEY", "dev-change-me-in-production")
-    # External language model (OpenAI-compatible API)
+    # ИИ PandaBook (ключ и endpoint — только в локальном .env)
     LLM_API_KEY: str = os.getenv("LLM_API_KEY", "") or os.getenv("CEREBRAS_API_KEY", "")
-    LLM_BASE_URL: str = os.getenv("LLM_BASE_URL", "https://api.cerebras.ai/v1")
-    LLM_MODEL: str = os.getenv("LLM_MODEL", "gpt-oss-120b")
+    LLM_BASE_URL: str = os.getenv("LLM_BASE_URL", "")
+    LLM_MODEL: str = os.getenv("LLM_MODEL", "pandabook-pro")
     # When False, FastAPI docs/openapi are hidden ("заныкать FastAPI")
     DEBUG: bool = os.getenv("PANDA_DEBUG", "0") == "1"
 

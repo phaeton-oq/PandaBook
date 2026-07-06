@@ -21,7 +21,7 @@ pytest                                 # 5/5 должно проходить
 - Все точки входа помечены `TODO(Backend-2)` прямо в файлах.
 - Переиспользуй готовое: `app/db/converters.py` (`fridge_to_schema`, `product_to_schema`,
   `parse_prefs`), `app/db/session.py` (`get_db`), модели в `app/db/models.py`.
-- LLM (`llm.py`) уже сделан нами — **не трогай**.
+- ИИ PandaBook (`llm.py`) уже сделан нами — **не трогай**.
 
 ## Задачи
 

@@ -116,7 +116,7 @@ class ShoppingItem(BaseModel):
 
 
 class Recipe(BaseModel):
-    """Produced by the LLM integration (Backend-2)."""
+    """Produced by PandaBook AI (Backend-2)."""
     title: str
     ingredients: list[str] = Field(default_factory=list)
     steps: list[str] = Field(default_factory=list)

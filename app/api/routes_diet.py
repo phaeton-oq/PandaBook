@@ -48,7 +48,7 @@ _shopping_cache: dict[str, tuple[float, list[ShoppingItem]]] = {}
 class PlanRequest(BaseModel):
     profile: UserProfile
     fridge: list[FridgeItem]
-    # "fast" = free algorithmic plan; "thinking" = Pro, LLM reasons harder
+    # "fast" = free algorithmic plan; "thinking" = Pro, ИИ PandaBook
     mode: Mode = "fast"
     # optional free-text wish, honored only in thinking mode
     request: str | None = None
@@ -413,7 +413,7 @@ def shopping_me(
     user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> list[ShoppingItem]:
-    """Shopping list from the user's fridge; LLM in thinking mode, algorithm in fast."""
+    """Shopping list from the user's fridge; ИИ in thinking mode, algorithm in fast."""
     profile = user_to_profile(user)
     rows = db.scalars(
         select(models.FridgeItem)

@@ -1,7 +1,7 @@
-"""Language-model integration (OpenAI-compatible API).
+"""ИИ PandaBook — рецепты, объяснения рациона и список докупок.
 
-Recipe generation and ration explanations for Pro mode.
-Degrades gracefully when the key is missing or the service is unavailable.
+Работает в режиме «Думающий» (Pro). При недоступности сервиса приложение
+не падает: отдаёт алгоритмический fallback.
 """
 from __future__ import annotations
 
@@ -144,7 +144,7 @@ def explain_plan(summary: str, effort: str = "low") -> str:
 
 
 def suggest_shopping_list(context: str, effort: str = "low") -> list[ShoppingItem] | None:
-    """LLM shopping list; returns None on failure so caller can fall back."""
+    """ИИ shopping list; returns None on failure so caller can fall back."""
     try:
         content = _chat(
             [
