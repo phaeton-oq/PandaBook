@@ -1,3 +1,5 @@
+import uuid
+
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -15,7 +17,7 @@ _PROFILE = {
 
 def test_register_login_wrong_password():
     with TestClient(app) as client:
-        email = "auth-test@panda.test"
+        email = f"auth-{uuid.uuid4().hex[:8]}@panda.test"
         reg = client.post(
             "/api/auth/register",
             json={"email": email, "password": "securepass1", "name": "T", "profile": _PROFILE},

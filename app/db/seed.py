@@ -2,13 +2,10 @@
 
 tags vocabulary: meat, pork, fish, egg, dairy, gluten, nuts, honey, alcohol
 """
-from datetime import date, timedelta
-
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.api.password_utils import hash_password
-from app.db.models import ConsumptionLog, Product, User
+from app.db.models import Product
 
 # name, category, kcal, protein, fat, carbs, tags
 CATALOG: list[tuple[str, str, float, float, float, float, list[str]]] = [
@@ -56,39 +53,4 @@ def seed_products(db: Session) -> None:
             protein_100=p, fat_100=f, carbs_100=c,
             tags_csv=",".join(tags),
         ))
-    db.commit()
-
-
-# a balanced ~2200 kcal day used to fabricate demo history
-_FULL_DAY = [("Куриная грудка", 300), ("Рис белый", 250), ("Овсянка", 100),
-             ("Яйцо куриное", 150), ("Банан", 120), ("Оливковое масло", 15)]
-_HALF_DAY = [("Куриная грудка", 150), ("Рис белый", 120)]
-
-
-def seed_demo(db: Session) -> None:
-    """Demo user + 5 days of history so the dashboard is live for the demo.
-
-    Last 3 days on target (streak=3 -> happy panda), 2 earlier days below.
-    """
-    if db.scalar(select(User).limit(1)) is not None:
-        return
-    user = User(email="demo@pandabook.local", name="Demo",
-                password_hash=hash_password("demo12345"),
-                sex="male", age=25, weight_kg=78, height_cm=182,
-                activity="moderate", goal="lose")
-    db.add(user)
-    db.flush()  # assign user.id
-
-    by_name = {p.name: p for p in db.scalars(select(Product)).all()}
-    today = date.today()
-    # offset 0..2 = full days (on target), 3..4 = half days (missed)
-    schedule = [(0, _FULL_DAY), (1, _FULL_DAY), (2, _FULL_DAY),
-                (3, _HALF_DAY), (4, _HALF_DAY)]
-    for offset, menu in schedule:
-        day = today - timedelta(days=offset)
-        for pname, grams in menu:
-            product = by_name.get(pname)
-            if product:
-                db.add(ConsumptionLog(user_id=user.id, product_id=product.id,
-                                      day=day, meal_type="mixed", grams=grams))
     db.commit()
