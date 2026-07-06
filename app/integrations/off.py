@@ -14,7 +14,9 @@ import httpx
 
 from app.schemas import Product
 
-_OFF_SEARCH = "https://world.openfoodfacts.org/cgi/search.pl"
+# search-a-licious: OFF's dedicated full-text search (reliable JSON, RU support).
+# The legacy /cgi/search.pl is flaky (returns HTML/503 on many queries).
+_OFF_SEARCH = "https://search.openfoodfacts.org/search"
 _OFF_PRODUCT = "https://world.openfoodfacts.org/api/v2/product/{barcode}.json"
 _USER_AGENT = "PandaBook/1.0 (hackathon)"
 
@@ -26,8 +28,15 @@ def _float(val) -> float:
         return 0.0
 
 
+def _name(raw: dict) -> str:
+    nm = raw.get("product_name") or raw.get("product_name_ru") or ""
+    if isinstance(nm, dict):  # search-a-licious may return a multilingual dict
+        nm = nm.get("ru") or nm.get("main") or next(iter(nm.values()), "")
+    return str(nm).strip()
+
+
 def _map_off_raw(raw: dict) -> Product | None:
-    name = (raw.get("product_name") or raw.get("product_name_ru") or "").strip()
+    name = _name(raw)
     if not name:
         return None
     nut = raw.get("nutriments") or {}
@@ -66,16 +75,21 @@ def search_products(query: str, limit: int = 10) -> list[Product]:
     try:
         resp = httpx.get(
             _OFF_SEARCH,
-            params={"search_terms": query, "json": 1, "page_size": limit},
-            timeout=10,
+            params={
+                "q": query,
+                "page_size": limit,
+                "lang": "ru",
+                "fields": "product_name,nutriments,code,categories",
+            },
+            timeout=15,
             headers={"User-Agent": _USER_AGENT},
         )
         resp.raise_for_status()
         out: list[Product] = []
-        for raw in resp.json().get("products", []):
+        for raw in resp.json().get("hits", []):
             p = _map_off_raw(raw)
-            if p is not None:
+            if p is not None and p.kcal_100 > 0:  # skip entries without usable nutrition
                 out.append(p)
         return out
-    except httpx.HTTPError:
+    except (httpx.HTTPError, ValueError):  # ValueError covers JSON decode errors
         return []
