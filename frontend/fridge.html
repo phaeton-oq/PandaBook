@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PandaBook - Мой холодильник</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="fridge.css">
+</head>
+<body>
+
+    <div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
+
+    <nav class="sidebar-menu" id="sidebarMenu">
+        <div class="sidebar-header">
+            <span class="sidebar-logo">PandaBook</span>
+            <button class="close-menu-btn" onclick="toggleMenu()">✕</button>
+        </div>
+        <ul class="menu-links">
+            <li><a href="profile.html" class="menu-item">Профиль</a></li>
+            <li><a href="dashboard.html" class="menu-item">Главный экран</a></li>
+            <li><a href="fridge.html" class="menu-item active">
+            <li><a href="shopping.html" class="menu-item">Мои покупки</a></li>
+            <li><a href="landing.html#pricing" class="menu-item">Купить подписку</a></li>
+        </ul>
+    </nav>
+
+    <div class="main-card">
+        <header class="header-section">
+            <div class="logo-area">
+                <button class="hamburger-btn" onclick="toggleMenu()">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 12H21M3 6H21M3 18H21" stroke="#4c7753" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <h1 class="logo">PandaBook</h1>
+            </div>
+            <h2 class="page-title">Мой холодильник</h2>
+        </header>
+        <div class="search-add-section">
+            <div class="search-panel">
+                <h3 class="section-title"> Поиск в глобальной базе</h3>
+                <div style="position: relative; width: 100%;">
+                    <input type="text" id="offSearchInput" class="form-control" placeholder="Введите название продукта" oninput="handleSearchInput(this.value)">
+                    <div class="search-results-dropdown" id="searchResults">
+                        <div class="search-result-item" onclick="selectSearchProduct('Творог 5% Простоквашино', '300')"> Творог 5% Простоквашино</div>
+                        <div class="search-result-item" onclick="selectSearchProduct('Греческий йогурт TEOS', '140')"> Греческий йогурт TEOS</div>
+                        <div class="search-result-item" onclick="selectSearchProduct('Сыр Легкий 15%', '200')"> Сыр Легкий 15%</div>
+                        <div class="search-result-item" onclick="selectSearchProduct('Филе индейки охлажденное', '500')"> Филе индейки охлажденное</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="add-panel">
+                <h3 class="section-title" id="formTitle">+ Добавить продукт вручную</h3>
+                <input type="hidden" id="editIndex" value="-1">
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <input type="text" id="prodName" class="form-control" placeholder="Название продукта">
+                    <div style="display: flex; gap: 10px;">
+                        <input type="number" id="prodWeight" class="form-control" placeholder="Количество (г)">
+                        <input type="date" id="prodExpiry" class="form-control">
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 5px;">
+                        <button type="button" class="btn" style="flex: 1;" onclick="saveProduct()">Сохранить</button>
+                        <button type="button" class="btn btn-secondary" id="cancelEditBtn" style="display: none;" onclick="resetForm()">Отмена</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="fridge-content">
+            <h3 class="section-title" style="margin-bottom: 20px;"> Продукты в наличии</h3>
+            <div class="product-table-wrapper">
+                <table class="product-table">
+                    <thead>
+                        <tr>
+                            <th>Название продукта</th>
+                            <th>Количество</th>
+                            <th>Срок годности</th>
+                            <th style="text-align: right;">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let products = [
+            { name: "Куриное филе (грудка)", weight: 600, expiry: "2026-07-08", expiringSoon: true },
+            { name: "Творог 5% Простоквашино", weight: 300, expiry: "2026-07-07", expiringSoon: true },
+            { name: "Бурый рис басмати", weight: 1000, expiry: "2026-12-15", expiringSoon: false },
+            { name: "Яйца куриные C0", weight: 450, expiry: "2026-07-25", expiringSoon: false }
+        ];
+
+        function toggleMenu() {
+            document.getElementById('sidebarMenu').classList.toggle('open');
+            document.getElementById('menuOverlay').classList.toggle('open');
+        }
+
+        function renderProducts() {
+            const tbody = document.getElementById('productTableBody');
+            tbody.innerHTML = '';
+            products.forEach((prod, index) => {
+                const tr = document.createElement('tr');
+                tr.className = 'product-row';
+                const dateParts = prod.expiry.split('-');
+                const formattedDate = dateParts.length === 3 ? `${dateParts[2]}.${dateParts[1]}.${dateParts[0]}` : prod.expiry;
+                let badgeHtml = prod.expiringSoon ? `<span class="badge-warning"> Скоро истекает</span>` : '';
+                tr.innerHTML = `
+                    <td>${prod.name}${badgeHtml}</td>
+                    <td>${prod.weight} г</td>
+                    <td>${formattedDate}</td>
+                    <td class="actions-cell">
+                        <button class="action-btn" onclick="editProduct(${index})">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5d605e" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </button>
+                        <button class="action-btn" onclick="deleteProduct(${index})">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e07a5f" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function handleSearchInput(value) {
+            const dropdown = document.getElementById('searchResults');
+            if (value.trim().length > 1) dropdown.classList.add('active');
+            else dropdown.classList.remove('active');
+        }
+
+        function selectSearchProduct(name, defaultWeight) {
+            document.getElementById('prodName').value = name;
+            document.getElementById('prodWeight').value = defaultWeight;
+            const today = new Date();
+            today.setDate(today.getDate() + 5);
+            document.getElementById('prodExpiry').value = today.toISOString().split('T')[0];
+            document.getElementById('searchResults').classList.remove('active');
+            document.getElementById('offSearchInput').value = '';
+        }
+
+        function saveProduct() {
+            const name = document.getElementById('prodName').value.trim();
+            const weight = parseInt(document.getElementById('prodWeight').value);
+            const expiry = document.getElementById('prodExpiry').value;
+            const editIndex = parseInt(document.getElementById('editIndex').value);
+            if (!name || !weight || !expiry) { alert('Пожалуйста, заполните все поля!'); return; }
+            const diffTime = new Date(expiry) - new Date();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const productData = { name, weight, expiry, expiringSoon: diffDays <= 2 };
+            if (editIndex > -1) products[editIndex] = productData;
+            else products.push(productData);
+            resetForm();
+            renderProducts();
+        }
+
+        function editProduct(index) {
+            const prod = products[index];
+            document.getElementById('prodName').value = prod.name;
+            document.getElementById('prodWeight').value = prod.weight;
+            document.getElementById('prodExpiry').value = prod.expiry;
+            document.getElementById('editIndex').value = index;
+            document.getElementById('formTitle').innerText = "📝 Редактировать продукт";
+            document.getElementById('cancelEditBtn').style.display = "inline-block";
+        }
+
+        function deleteProduct(index) {
+            if(confirm('Удалить этот продукт?')) { products.splice(index, 1); renderProducts(); }
+        }
+
+        function resetForm() {
+            document.getElementById('prodName').value = '';
+            document.getElementById('prodWeight').value = '';
+            document.getElementById('prodExpiry').value = '';
+            document.getElementById('editIndex').value = '-1';
+            document.getElementById('formTitle').innerText = "➕ Добавить продукт вручную";
+            document.getElementById('cancelEditBtn').style.display = "none";
+        }
+        renderProducts();
+    </script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PandaBook - Главный экран</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
+
+    <nav class="sidebar-menu" id="sidebarMenu">
+        <div class="sidebar-header">
+            <span class="sidebar-logo">PandaBook</span>
+            <button class="close-menu-btn" onclick="toggleMenu()">✕</button>
+        </div>
+        <ul class="menu-links">
+            <li><a href="profile.html" class="menu-item">Профиль</a></li>
+            <li><a href="dashboard.html" class="menu-item active">Главный экран</a></li>
+            <li><a href="fridge.html" class="menu-item">Мой холодильник</a></li>
+            <li><a href="shopping.html" class="menu-item">Мои покупки</a></li>
+            <li><a href="landing.html#pricing" class="menu-item">Купить подписку</a></li>
+        </ul>
+    </nav>
+
+    <div class="main-card">
+        <header class="header-section">
+            <div class="logo-area">
+                <button class="hamburger-btn" onclick="toggleMenu()">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 12H21M3 6H21M3 18H21" stroke="#4c7753" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <h1 class="logo">PandaBook</h1>
+            </div>
+            
+            <div class="mode-switcher">
+                <button class="mode-btn" id="btn-fast" onclick="setMode('fast')">Быстрый</button>
+                <button class="mode-btn active" id="btn-thinking" onclick="setMode('thinking')">Думающий (pro)</button>
+            </div>
+        </header>
+        <section class="kbzhu-container">
+            <div class="kbzhu-card">
+                <span class="kbzhu-title">Каллории</span>
+                <span class="kbzhu-value">1500 / 2000ккал</span>
+                <div class="progress-bg"><div class="progress-bar" style="width: 75%;"></div></div>
+            </div>
+            <div class="kbzhu-card">
+                <span class="kbzhu-title">Белки</span>
+                <span class="kbzhu-value">80 / 120г</span>
+                <div class="progress-bg"><div class="progress-bar" style="width: 66%;"></div></div>
+            </div>
+            <div class="kbzhu-card">
+                <span class="kbzhu-title">Жиры</span>
+                <span class="kbzhu-value">68 / 80г</span>
+                <div class="progress-bg"><div class="progress-bar" style="width: 85%;"></div></div>
+            </div>
+            <div class="kbzhu-card">
+                <span class="kbzhu-title">Углеводы</span>
+                <span class="kbzhu-value">225 / 250г</span>
+                <div class="progress-bg"><div class="progress-bar" style="width: 90%;"></div></div>
+            </div>
+        </section>
+
+        <div class="notes-block">
+            <strong>Заметка ИИ:</strong> В ужине рекомендуется снизить количество быстрых углеводов для лучшего сна.
+        </div>
+
+        <section class="meals-container">
+            <div class="meal-accordion">
+                <div class="meal-header" onclick="toggleMeal(this)">
+                    <span class="meal-title">Завтрак</span>
+                    <span class="arrow-icon">▼</span>
+                </div>
+                <div class="meal-content">
+                    <div class="product-row">
+                        <span class="product-name">Овсяная каша на молоке (250г)</span>
+                        <span class="product-kcal">310 ккал</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="meal-accordion">
+                <div class="meal-header" onclick="toggleMeal(this)">
+                    <span class="meal-title">Обед</span>
+                    <span class="arrow-icon">▼</span>
+                </div>
+                <div class="meal-content">
+                    <div class="product-row">
+                        <span class="product-name">Куриное филе с рисом (350г)</span>
+                        <span class="product-kcal">480 ккал</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="meal-accordion">
+                <div class="meal-header" onclick="toggleMeal(this)">
+                    <span class="meal-title">Ужин</span>
+                    <span class="arrow-icon">▼</span>
+                </div>
+                <div class="meal-content">
+                    <div class="product-row">
+                        <span class="product-name">Салат с тунцом (200г)</span>
+                        <span class="product-kcal">290 ккал</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="meal-accordion">
+                <div class="meal-header" onclick="toggleMeal(this)">
+                    <span class="meal-title">Перекус</span>
+                    <span class="arrow-icon">▼</span>
+                </div>
+                <div class="meal-content">
+                    <div class="product-row">
+                        <span class="product-name">Йогурт натуральный <span style="color:#e3a678;">скоро истекает</span></span>
+                        <span class="product-kcal">120 ккал</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div id="thinking-features">
+            <section class="ai-explanation-card">
+                <h2 class="ai-title">Почему такой рацион?</h2>
+                <p class="ai-text">Этот план питания оптимизирован под вашу цель дефицита калорий с сохранением высокого уровня белка. Сложные углеводы в обеде обеспечат энергией на весь день.</p>
+                
+                <div class="recipe-box">
+                    <h3 class="recipe-title">Рекомендованный рецепт</h3>
+                    <p class="recipe-text"><strong>Куриное филе с рисом:</strong> Обжарить филе, отварить бурый рис 1:2. Подавать с зеленью.</p>
+                </div>
+            </section>
+
+            <section class="request-container">
+                <br>
+                <div class="request-box">
+                    <input type="text" placeholder="Хочу побольше белка или убрать рыбу..." class="request-input">
+                    <button class="request-btn">Изменить</button>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebarMenu');
+            const overlay = document.getElementById('menuOverlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        }
+
+        function setMode(mode) {
+            const btnFast = document.getElementById('btn-fast');
+            const btnThinking = document.getElementById('btn-thinking');
+            const thinkingFeatures = document.getElementById('thinking-features');
+            if (mode === 'fast') {
+                btnFast.classList.add('active');
+                btnThinking.classList.remove('active');
+                thinkingFeatures.style.display = 'none';
+            } else {
+                btnThinking.classList.add('active');
+                btnFast.classList.remove('active');
+                thinkingFeatures.style.display = 'block';
+            }
+        }
+
+        function toggleMeal(element) {
+            element.parentElement.classList.toggle('open');
+        }
+    </script>
+</body>
+</html>

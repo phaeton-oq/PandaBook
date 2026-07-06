@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PandaBook - Тарифы</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="land-shop.css">
+</head>
+<body>
+
+    <div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
+
+    <nav class="sidebar-menu" id="sidebarMenu">
+        <div class="sidebar-header">
+            <span class="sidebar-logo">PandaBook</span>
+            <button class="close-menu-btn" onclick="toggleMenu()">✕</button>
+        </div>
+        <ul class="menu-links">
+            <li><a href="profile.html" class="menu-item">Профиль</a></li>
+            <li><a href="dashboard.html" class="menu-item">Главный экран</a></li>
+            <li><a href="fridge.html" class="menu-item">Мой холодильник</a></li>
+            <li><a href="shopping.html" class="menu-item">Мои покупки</a></li>
+            <li><a href="#pricing" class="menu-item" onclick="toggleMenu()">Купить подписку</a></li>
+        </ul>
+    </nav>
+
+    <div class="main-card">
+        <header class="header-section">
+            <div class="logo-area">
+                <button class="hamburger-btn" onclick="toggleMenu()">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 12H21M3 6H21M3 18H21" stroke="#4c7753" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <span class="logo">PandaBook</span>
+            </div>
+            <nav class="nav-links">
+                <a href="dashboard.html" class="nav-item">Главный экран</a>
+                <a href="fridge.html" class="nav-item">Холодильник</a>
+                <a href="shopping.html" class="nav-item">Список докупок</a>
+            </nav>
+        </header>
+        
+        <section class="hero-panel">
+            <div class="hero-content">
+                <h2 class="hero-title">Заполни холодильник - получи рацион!</h2>
+                <p class="hero-text">Просто укажи, какие продукты у тебя есть, а искусственный интеллект PandaBook сам составит идеальный план питания на сегодня.</p>
+                <a href="fridge.html" class="btn cta-btn">Открыть мой холодильник</a>
+            </div>
+        </section>
+        
+        <section class="pricing-section" id="pricing">
+            <h3 class="section-title" style="text-align: center; margin-bottom: 25px; font-size: 22px;">Выбери свой формат питания</h3>
+            
+            <div class="pricing-grid">
+                <div class="panel price-card">
+                    <h4 class="tariff-name">Базовый (Free)</h4>
+                    <div class="price">0 ₽ <span class="price-period">/ всегда</span></div>
+                    <ul class="features-list">
+                        <li>Учет продуктов в холодильнике</li>
+                        <li>Простые рецепты из наличия</li>
+                        <li>Без учета дефицитов макронутриентов</li>
+                    </ul>
+                    <button class="btn btn-secondary" style="width: 100%; margin-top: auto;">Текущий тариф</button>
+                </div>
+                <div class="panel price-card pro-card">
+                    <div class="pro-badge">Популярно</div>
+                    <h4 class="tariff-name" style="color: #4c7753;">Умный (Pro)</h4>
+                    <div class="price">299 ₽ <span class="price-period">/ месяц</span></div>
+                    <p class="tariff-subtitle">«Думающая» подписка для вашего здоровья</p>
+                    <ul class="features-list">
+                        <li> Умный баланс БЖУ под ваши цели</li>
+                        <li> Автоматический <b>Список докупок</b> с обоснованием</li>
+                        <li> Подбор продуктов, покрывающих нехватку белка и витаминов</li>
+                    </ul>
+                    <button class="btn" style="width: 100%; margin-top: auto;">Активировать Pro</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebarMenu');
+            const overlay = document.getElementById('menuOverlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        }
+    </script>
+</body>
+</html>
