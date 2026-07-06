@@ -24,8 +24,9 @@ def get_db():
 def init_db() -> None:
     """Create tables and seed the product catalog if empty. Called on startup."""
     from app.db import models  # noqa: F401  (register models)
-    from app.db.seed import seed_products
+    from app.db.seed import seed_demo, seed_products
 
     Base.metadata.create_all(bind=engine)
     with SessionLocal() as db:
         seed_products(db)
+        seed_demo(db)

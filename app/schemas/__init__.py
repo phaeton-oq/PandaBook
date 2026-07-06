@@ -120,3 +120,12 @@ class Recipe(BaseModel):
     title: str
     ingredients: list[str] = Field(default_factory=list)
     steps: list[str] = Field(default_factory=list)
+
+
+class DayNutrition(BaseModel):
+    day: date
+    kcal: float
+    protein_g: float
+    fat_g: float
+    carbs_g: float
+    goal_met: bool  # calories landed within the goal band for that day

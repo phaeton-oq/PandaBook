@@ -32,3 +32,10 @@ def fridge_to_schema(item: models.FridgeItem) -> schemas.FridgeItem:
         quantity_g=item.quantity_g,
         expiry_date=item.expiry_date,
     )
+
+
+def user_to_profile(u: models.User) -> schemas.UserProfile:
+    return schemas.UserProfile(
+        sex=u.sex, age=u.age, weight_kg=u.weight_kg, height_cm=u.height_cm,
+        activity=u.activity, goal=u.goal, prefs=parse_prefs(u.prefs_csv),
+    )
