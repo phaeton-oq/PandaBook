@@ -7,6 +7,7 @@ from datetime import date, timedelta
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.api.password_utils import hash_password
 from app.db.models import ConsumptionLog, Product, User
 
 # name, category, kcal, protein, fat, carbs, tags
@@ -72,6 +73,7 @@ def seed_demo(db: Session) -> None:
     if db.scalar(select(User).limit(1)) is not None:
         return
     user = User(email="demo@pandabook.local", name="Demo",
+                password_hash=hash_password("demo12345"),
                 sex="male", age=25, weight_kg=78, height_cm=182,
                 activity="moderate", goal="lose")
     db.add(user)

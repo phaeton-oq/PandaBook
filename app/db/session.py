@@ -23,10 +23,20 @@ def get_db():
 
 def init_db() -> None:
     """Create tables and seed the product catalog if empty. Called on startup."""
+    from sqlalchemy import inspect, text
+
     from app.db import models  # noqa: F401  (register models)
     from app.db.seed import seed_demo, seed_products
 
     Base.metadata.create_all(bind=engine)
+    insp = inspect(engine)
+    if insp.has_table("users"):
+        cols = {c["name"] for c in insp.get_columns("users")}
+        if "password_hash" not in cols:
+            with engine.begin() as conn:
+                conn.execute(text(
+                    "ALTER TABLE users ADD COLUMN password_hash VARCHAR NOT NULL DEFAULT ''"
+                ))
     with SessionLocal() as db:
         seed_products(db)
         seed_demo(db)
