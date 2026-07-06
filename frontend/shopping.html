@@ -47,7 +47,7 @@
                         <tr>
                             <th>Продукт</th>
                             <th>Рекомендуемый объём</th>
-                            <th>Обоснование</th>
+                            <th>Обоснование ИИ</th>
                         </tr>
                     </thead>
                     <tbody id="shopBody">
@@ -68,7 +68,7 @@
         async function loadShopping() {
             const tbody = document.getElementById('shopBody');
             const status = document.getElementById('shopStatus');
-            tbody.innerHTML = '<tr><td colspan="3">Анализируем холодильник…</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="3">ИИ анализирует холодильник…</td></tr>';
             status.textContent = 'Формируем список докупок…';
             try {
                 const list = await api("GET", "/api/diet/shopping/me?mode=thinking");

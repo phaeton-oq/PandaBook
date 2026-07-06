@@ -257,7 +257,7 @@
 
         function renderThinking(r) {
             document.querySelector('.ai-text').textContent =
-                r.explanation || 'Не удалось получить объяснение. Нажмите «Изменить» или переключите режим.';
+                r.explanation || 'Не удалось получить объяснение от ИИ. Нажмите «Изменить» или переключите режим.';
             const recipe = r.recipe;
             const box = document.querySelector('.recipe-box');
             if (recipe && recipe.steps && recipe.steps.length) {
@@ -285,7 +285,7 @@
             const aiText = document.querySelector('.ai-text');
             if (currentMode === 'thinking') {
                 if (thinkingStatus) thinkingStatus.style.display = 'block';
-                if (aiText) aiText.textContent = 'Готовим объяснение и рецепт…';
+                if (aiText) aiText.textContent = 'ИИ готовит объяснение и рецепт…';
             } else if (thinkingStatus) {
                 thinkingStatus.style.display = 'none';
             }
