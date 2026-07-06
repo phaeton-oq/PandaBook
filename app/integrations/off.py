@@ -35,6 +35,44 @@ def _name(raw: dict) -> str:
     return str(nm).strip()
 
 
+# OFF's structured allergen/category tags are mostly empty for RU products, so
+# we infer dietary tags from the product name. Rough but it's what drives the
+# vegan/halal/gluten/lactose filters for external products.
+_NAME_TAGS: dict[str, tuple[str, ...]] = {
+    "dairy": ("творог", "молоко", "молочн", "сыр", "йогурт", "сметан", "сливк",
+              "кефир", "ряженк", "сливочн", "творож"),
+    "meat": ("свинин", "говядин", "куриц", "курин", "индейк", "мясо", "колбас",
+             "ветчин", "бекон", "сосиск", "котлет", "фарш", "баранин", "телятин",
+             "паштет", "пельмен", "стейк"),
+    "pork": ("свинин", "бекон", "ветчин", "сало"),
+    "fish": ("рыб", "лосось", "тунец", "сельд", "форел", "треск", "креветк",
+             "краб", "икра", "скумбри", "горбуш", "морепродукт"),
+    "egg": ("яйц", "яичн", "омлет", "глазунь"),
+    "gluten": ("хлеб", "макарон", "мука", "булк", "пшениц", "пицц", "лазан",
+               "вафл", "печенье", "сухар", "батон", "лаваш", "пряник", "тесто"),
+    "nuts": ("орех", "миндал", "фундук", "арахис", "кешью", "фисташк"),
+    "honey": ("мёд", "мед "),
+}
+
+
+def _infer_tags(name: str, raw: dict) -> list[str]:
+    text = name.lower()
+    tags = {tag for tag, words in _NAME_TAGS.items() if any(w in text for w in words)}
+    # OFF allergens as a bonus signal when present
+    for a in raw.get("allergens_tags") or []:
+        if "milk" in a:
+            tags.add("dairy")
+        if "gluten" in a:
+            tags.add("gluten")
+        if "egg" in a:
+            tags.add("egg")
+        if "nut" in a:
+            tags.add("nuts")
+        if "fish" in a:
+            tags.add("fish")
+    return sorted(tags)
+
+
 def _map_off_raw(raw: dict) -> Product | None:
     name = _name(raw)
     if not name:
@@ -52,7 +90,7 @@ def _map_off_raw(raw: dict) -> Product | None:
         protein_100=_float(nut.get("proteins_100g")),
         fat_100=_float(nut.get("fat_100g")),
         carbs_100=_float(nut.get("carbohydrates_100g")),
-        tags=[],
+        tags=_infer_tags(name, raw),
         off_barcode=str(barcode) if barcode else None,
     )
 
@@ -79,7 +117,7 @@ def search_products(query: str, limit: int = 10) -> list[Product]:
                 "q": query,
                 "page_size": limit,
                 "lang": "ru",
-                "fields": "product_name,nutriments,code,categories",
+                "fields": "product_name,nutriments,code,categories,allergens_tags",
             },
             timeout=15,
             headers={"User-Agent": _USER_AGENT},
